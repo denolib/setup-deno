@@ -22,7 +22,7 @@ jobs:
         run: npm run format-check
 
       - name: Set up deno v0.18.0
-        uses: "."
+        uses: ./
         with:
           version: v0.18.0
 

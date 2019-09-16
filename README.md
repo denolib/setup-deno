@@ -1,13 +1,12 @@
 # setup-deno-action
 
 <p align="left">
-  <a href="https://github.com/actions/setup-node"><img alt="GitHub Actions status" src="https://github.com/actions/setup-node/workflows/Main%20workflow/badge.svg"></a>
+  <a href="https://github.com/denolib/setup-deno-action"><img alt="GitHub Actions status" src="https://github.com/denolib/setup-deno-action/workflows/Main%20workflow/badge.svg"></a>
 </p>
 
-This action sets by node environment for use in actions by:
+This action sets up deno environment for use in actions by:
 
-- optionally downloading and caching a version of node - npm by version spec and add to PATH
-- registering problem matchers for error output 
+- optionally downloading and caching a version of deno - versioned and add to PATH
 
 # Usage
 
@@ -17,11 +16,10 @@ Basic:
 ```yaml
 steps:
 - uses: actions/checkout@master
-- uses: actions/setup-node@v1
+- uses: denolib/setup-deno-action@v1
   with:
-    node-version: '10.x'
-- run: npm install
-- run: npm test
+    deno-version: 'v0.18.0'
+- run: deno https://deno.land/welcome.ts
 ```
 
 Matrix Testing:
@@ -31,75 +29,16 @@ jobs:
     runs-on: ubuntu-16.04
     strategy:
       matrix:
-        node: [ '10', '8' ]
-    name: Node ${{ matrix.node }} sample
+        deno: [ 'v0.18.0', 'v0.17.0' ]
+    name: Deno ${{ matrix.deno }} sample
     steps:
       - uses: actions/checkout@master
-      - name: Setup node
-        uses: actions/setup-node@v1
+      - name: Setup deno
+        uses: denolib/setup-deno-action@v1
         with:
-          node-version: ${{ matrix.node }}
-      - run: npm install
-      - run: npm test
+          deno-version: ${{ matrix.deno }}
+      - run: deno https://deno.land/welcome.ts
 ```
-
-Publish to npmjs and GPR with npm:
-```yaml
-steps:
-- uses: actions/checkout@master
-- uses: actions/setup-node@v1
-  with:
-    node-version: '10.x'
-    registry-url: 'https://registry.npmjs.org'
-- run: npm install
-- run: npm publish
-  env:
-    NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-- uses: actions/setup-node@v1
-  with:
-    registry-url: 'https://npm.pkg.github.com'
-- run: npm publish
-  env:
-    NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-```
-
-Publish to npmjs and GPR with yarn:
-```yaml
-steps:
-- uses: actions/checkout@master
-- uses: actions/setup-node@v1
-  with:
-    node-version: '10.x'
-    registry-url: <registry url>
-- run: yarn install
-- run: yarn publish
-  env:
-    NODE_AUTH_TOKEN: ${{ secrets.YARN_TOKEN }}
-- uses: actions/setup-node@v1
-  with:
-    registry-url: 'https://npm.pkg.github.com'
-- run: yarn publish
-  env:
-    NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-```
-
-Use private packages:
-```yaml
-steps:
-- uses: actions/checkout@master
-- uses: actions/setup-node@v1
-  with:
-    node-version: '10.x'
-    registry-url: 'https://registry.npmjs.org'
-# Skip post-install scripts here, as a malicious
-# script could steal NODE_AUTH_TOKEN.
-- run: npm install --ignore-scripts
-  env:
-    NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-# `npm rebuild` will run all those post-install scritps for us.
-- run: npm rebuild && npm run prepare --if-present
-```
-
 
 # License
 

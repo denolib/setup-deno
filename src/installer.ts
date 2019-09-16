@@ -106,8 +106,8 @@ async function acquireDeno(version: string): Promise<string> {
   } else if (extension == "gz") {
     execSync(`mv ${downloadPath} ${toolName}.gz`);
     execSync(`gzip -d ${toolName}.gz`);
-    execSync(`mkdir -p ${toolName}.gz`);
-    execSync(`mv ${toolName}.gz ${denoBinPath}`);
+    execSync(`mkdir -p ${denoBinPath}`);
+    execSync(`mv ${toolName} ${denoBinPath}`);
     extPath = denoBinPath;
   } else {
     throw "Unknown extension";

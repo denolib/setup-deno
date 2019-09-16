@@ -49,7 +49,7 @@ export async function getDeno(version: string) {
     core.debug(`Cached deno found at ${toolPath}`);
   }
 
-  let denoBinaryName = "demo";
+  let denoBinaryName = "deno";
   if (os.platform() == "win32") {
     denoBinaryName += ".exe";
   }

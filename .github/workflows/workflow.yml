@@ -19,6 +19,7 @@ jobs:
         run: npm install
 
       - name: Lint
+        if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macos')
         run: npm run format-check
 
       - name: Set up deno v0.18.0
@@ -27,4 +28,6 @@ jobs:
           deno-version: v0.18.0
 
       - name: Run deno
-        run: deno https://deno.land/welcome.ts
+        run: |
+          which deno
+          deno https://deno.land/welcome.ts

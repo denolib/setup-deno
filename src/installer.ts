@@ -75,7 +75,7 @@ function denoBinPath(): string {
     case "linux":
       return path.join(process.env.HOME || "", ".deno", "bin");
     case "win32":
-      return path.join(process.env.HOME || "", ".deno", "bin");
+      return path.join(process.env.USERPROFILE || "", ".deno", "bin");
     default:
       throw "Invalid platform";
   }

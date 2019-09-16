@@ -104,7 +104,11 @@ async function acquireDeno(version: string): Promise<string> {
   // Extract
   //
   let extPath: string;
-  fs.mkdirSync(tempDirectory);
+  if (!fs.existsSync(tempDirectory)) {
+    fs.mkdirSync(tempDirectory, {
+      recursive: true
+    });
+  }
   if (extension == "zip") {
     extPath = await tc.extractZip(downloadPath, tempDirectory);
     extPath = tempDirectory;

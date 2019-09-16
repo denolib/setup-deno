@@ -49,12 +49,19 @@ export async function getDeno(version: string) {
     core.debug(`Cached deno found at ${toolPath}`);
   }
 
+  let denoBinaryName = "demo";
+  if (os.platform() == "win32") {
+    denoBinaryName += ".exe";
+  }
   const denoBin = denoBinPath();
   fs.mkdirSync(denoBin, {
     recursive: true
   });
-  fs.copyFileSync(path.join(toolPath, "deno"), path.join(denoBin, "deno"));
-  fs.chmodSync(path.join(denoBin, "deno"), 0o755);
+  fs.copyFileSync(
+    path.join(toolPath, denoBinaryName),
+    path.join(denoBin, denoBinaryName)
+  );
+  fs.chmodSync(path.join(denoBin, denoBinaryName), 0o755);
 
   //
   // prepend the tools path. instructs the agent to prepend for future tasks

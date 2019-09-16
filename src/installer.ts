@@ -39,8 +39,12 @@ export async function getDeno(version: string) {
 
   // If not found in cache, download
   if (!toolPath) {
+    core.debug(`Downloading deno at version ${version}`);
     // download, extract, cache
     toolPath = await acquireDeno(version);
+    core.debug(`Deno downloaded to ${toolPath}`);
+  } else {
+    core.debug(`Cached deno found at ${toolPath}`);
   }
 
   //
@@ -76,8 +80,11 @@ async function acquireDeno(version: string): Promise<string> {
       throw "Invalid platform";
   }
 
-  let downloadUrl = `https://github.com/denoland/deno/releases/download/${version}/deno_${platform}_x64.${extension}`;
+  core.debug(
+    `Trying to install for platform ${platform} with extension ${extension} at path ${denoBinPath}`
+  );
 
+  let downloadUrl = `https://github.com/denoland/deno/releases/download/${version}/deno_${platform}_x64.${extension}`;
   let downloadPath: string;
 
   try {
@@ -85,6 +92,8 @@ async function acquireDeno(version: string): Promise<string> {
   } catch (err) {
     throw err;
   }
+
+  core.debug(`Downloaded ${downloadUrl} to ${downloadPath}`);
 
   //
   // Extract
@@ -95,10 +104,12 @@ async function acquireDeno(version: string): Promise<string> {
   } else {
     extPath = await tc.extractTar(downloadPath, denoBinPath);
   }
+  core.debug(`Extracted archive to ${extPath}`);
 
   //
   // Install into the local tool cache - deno extracts a file that matches the fileName downloaded
   //
-  let tool = path.join(denoBinPath, `deno_${platform}_x64`);
+  let tool = path.join(extPath, `deno_${platform}_x64`);
+  core.debug(`Cache file ${tool} into toolcache`);
   return await tc.cacheFile(tool, `deno`, "deno", version);
 }

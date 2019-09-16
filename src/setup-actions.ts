@@ -8,6 +8,7 @@ async function run() {
     // If not supplied then task is still used to setup proxy, auth, etc...
     //
     let version = core.getInput("deno-version");
+    core.debug(`Installing deno at version ${version}`);
     if (version) {
       // TODO: installer doesn't support proxy
       await installer.getDeno(version);

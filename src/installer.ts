@@ -121,10 +121,9 @@ async function acquireDeno(version: string): Promise<string> {
   const tempDenoPath = path.join(os.tmpdir(), "deno");
   fs.mkdirSync(tempDenoPath);
   if (extension == "zip") {
-    fs.renameSync(downloadPath, `${downloadPath}.zip`);
-    await tc.extractZip(`${downloadPath}.zip`);
+    extPath = await tc.extractZip(downloadPath, tempDenoPath);
     extPath = tempDenoPath;
-    fs.renameSync(downloadPath, path.join(extPath, toolName));
+    toolName = "deno";
   } else if (extension == "gz") {
     fs.renameSync(downloadPath, `${downloadPath}.gz`);
     execSync(`gzip -d ${downloadPath}.gz`);
@@ -134,6 +133,10 @@ async function acquireDeno(version: string): Promise<string> {
     throw "Unknown extension";
   }
   core.debug(`Extracted archive to ${extPath}`);
+
+  if (platform == "win") {
+    toolName += ".exe";
+  }
 
   //
   // Install into the local tool cache - deno extracts a file that matches the fileName downloaded

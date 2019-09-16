@@ -87,6 +87,7 @@ async function acquireDeno(version: string): Promise<string> {
   //
   let platform: "osx" | "linux" | "win";
   let extension: "gz" | "zip";
+  let executableExtension = "";
 
   switch (os.platform()) {
     case "darwin":
@@ -100,6 +101,7 @@ async function acquireDeno(version: string): Promise<string> {
     case "win32":
       platform = "win";
       extension = "zip";
+      executableExtension = ".exe";
       break;
     default:
       throw "Invalid platform";
@@ -130,7 +132,7 @@ async function acquireDeno(version: string): Promise<string> {
   if (extension == "zip") {
     extPath = await tc.extractZip(downloadPath, tempDenoPath);
     extPath = tempDenoPath;
-    toolName = "deno";
+    toolName = "deno" + executableExtension;
   } else if (extension == "gz") {
     fs.renameSync(downloadPath, `${downloadPath}.gz`);
     execSync(`gzip -d ${downloadPath}.gz`);
@@ -141,14 +143,15 @@ async function acquireDeno(version: string): Promise<string> {
   }
   core.debug(`Extracted archive to ${extPath}`);
 
-  if (platform == "win") {
-    toolName += ".exe";
-  }
-
   //
   // Install into the local tool cache - deno extracts a file that matches the fileName downloaded
   //
   let tool = path.join(extPath, toolName);
   core.debug(`Cache file ${tool} into toolcache`);
-  return await tc.cacheFile(tool, "deno", "deno", version);
+  return await tc.cacheFile(
+    tool,
+    "deno" + executableExtension,
+    "deno",
+    version
+  );
 }

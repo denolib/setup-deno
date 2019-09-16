@@ -51,6 +51,7 @@ export async function getDeno(version: string) {
 
   const denoBin = denoBinPath();
   fs.copyFileSync(path.join(toolPath, "deno"), path.join(denoBin, "deno"));
+  fs.chmodSync(path.join(denoBin, "deno"), 0o755);
 
   //
   // prepend the tools path. instructs the agent to prepend for future tasks

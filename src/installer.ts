@@ -5,6 +5,7 @@ import * as io from "@actions/io";
 import * as tc from "@actions/tool-cache";
 import * as os from "os";
 import * as path from "path";
+import * as fs from "fs";
 import { exec, execSync } from "child_process";
 
 let osPlat: string = os.platform();
@@ -48,9 +49,25 @@ export async function getDeno(version: string) {
     core.debug(`Cached deno found at ${toolPath}`);
   }
 
+  const denoBin = denoBinPath();
+  fs.copyFileSync(path.join(toolPath, "deno"), path.join(denoBin, "deno"));
+
   //
   // prepend the tools path. instructs the agent to prepend for future tasks
-  core.addPath(toolPath);
+  core.addPath(denoBin);
+}
+
+function denoBinPath(): string {
+  switch (os.platform()) {
+    case "darwin":
+      return path.join(process.env.HOME || "", ".deno", "bin");
+    case "linux":
+      return path.join(process.env.HOME || "", ".deno", "bin");
+    case "win32":
+      return path.join(process.env.HOME || "", ".deno", "bin");
+    default:
+      throw "Invalid platform";
+  }
 }
 
 async function acquireDeno(version: string): Promise<string> {
@@ -59,30 +76,26 @@ async function acquireDeno(version: string): Promise<string> {
   //
   let platform: "osx" | "linux" | "win";
   let extension: "gz" | "zip";
-  let denoBinPath: string;
 
   switch (os.platform()) {
     case "darwin":
       platform = "osx";
       extension = "gz";
-      denoBinPath = `${process.env.HOME}/.deno/bin`;
       break;
     case "linux":
       platform = "linux";
       extension = "gz";
-      denoBinPath = `${process.env.HOME}/.deno/bin`;
       break;
     case "win32":
       platform = "win";
       extension = "zip";
-      denoBinPath = `${process.env.HOME}\\.deno\\bin`;
       break;
     default:
       throw "Invalid platform";
   }
 
   core.debug(
-    `Trying to install for platform ${platform} with extension ${extension} at path ${denoBinPath}`
+    `Trying to install for platform ${platform} with extension ${extension}`
   );
 
   let toolName = `deno_${platform}_x64`;
@@ -102,13 +115,12 @@ async function acquireDeno(version: string): Promise<string> {
   //
   let extPath: string;
   if (extension == "zip") {
-    extPath = await tc.extractZip(downloadPath, denoBinPath);
+    extPath = await tc.extractZip(downloadPath, fs.mkdtempSync("deno"));
   } else if (extension == "gz") {
-    execSync(`mv ${downloadPath} ${toolName}.gz`);
-    execSync(`gzip -d ${toolName}.gz`);
-    execSync(`mkdir -p ${denoBinPath}`);
-    execSync(`mv ${toolName} ${denoBinPath}`);
-    extPath = denoBinPath;
+    fs.renameSync(downloadPath, `${downloadPath}.gz`);
+    execSync(`gzip -d ${downloadPath}.gz`);
+    extPath = fs.mkdtempSync("deno");
+    fs.renameSync(downloadPath, path.join(extPath, toolName));
   } else {
     throw "Unknown extension";
   }
@@ -119,5 +131,5 @@ async function acquireDeno(version: string): Promise<string> {
   //
   let tool = path.join(extPath, toolName);
   core.debug(`Cache file ${tool} into toolcache`);
-  return await tc.cacheFile(tool, `deno`, "deno", version);
+  return await tc.cacheFile(tool, "deno", "deno", version);
 }

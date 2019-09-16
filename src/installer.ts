@@ -118,12 +118,13 @@ async function acquireDeno(version: string): Promise<string> {
   // Extract
   //
   let extPath: string;
+  const tempDenoPath = fs.mkdtempSync(path.join(os.tmpdir(), "deno"));
   if (extension == "zip") {
-    extPath = await tc.extractZip(downloadPath, fs.mkdtempSync("deno"));
+    extPath = await tc.extractZip(downloadPath, tempDenoPath);
   } else if (extension == "gz") {
     fs.renameSync(downloadPath, `${downloadPath}.gz`);
     execSync(`gzip -d ${downloadPath}.gz`);
-    extPath = fs.mkdtempSync("deno");
+    extPath = tempDenoPath;
     fs.renameSync(downloadPath, path.join(extPath, toolName));
   } else {
     throw "Unknown extension";

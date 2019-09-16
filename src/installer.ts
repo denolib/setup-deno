@@ -103,11 +103,14 @@ async function acquireDeno(version: string): Promise<string> {
   let extPath: string;
   if (extension == "zip") {
     extPath = await tc.extractZip(downloadPath, denoBinPath);
-  } else {
-    execSync(`gzip -d ${downloadPath}`);
-    execSync(`mkdir -p ${denoBinPath}`);
-    execSync(`mv ${toolName} $${denoBinPath}`);
+  } else if (extension == "gz") {
+    execSync(`mv ${downloadPath} ${toolName}.gz`);
+    execSync(`gzip -d ${toolName}.gz`);
+    execSync(`mkdir -p ${toolName}.gz`);
+    execSync(`mv ${toolName}.gz ${denoBinPath}`);
     extPath = denoBinPath;
+  } else {
+    throw "Unknown extension";
   }
   core.debug(`Extracted archive to ${extPath}`);
 

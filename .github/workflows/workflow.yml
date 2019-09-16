@@ -20,11 +20,11 @@ jobs:
 
       - name: Lint
         run: npm run format-check
-      
+
       - name: Set up deno v0.18.0
         uses: "."
-        version: v0.18.0
-      
+        with:
+          version: v0.18.0
+
       - name: Run deno
         run: deno https://deno.land/welcome.ts
-

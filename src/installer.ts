@@ -118,7 +118,8 @@ async function acquireDeno(version: string): Promise<string> {
   // Extract
   //
   let extPath: string;
-  const tempDenoPath = fs.mkdtempSync(path.join(os.tmpdir(), "deno"));
+  const tempDenoPath = path.join(os.tmpdir(), "deno");
+  fs.mkdirSync(tempDenoPath);
   if (extension == "zip") {
     extPath = await tc.extractZip(downloadPath, tempDenoPath);
   } else if (extension == "gz") {

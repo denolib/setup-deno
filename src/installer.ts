@@ -29,9 +29,11 @@ export async function getDeno(version: string) {
     denoBinaryName += ".exe";
   }
   const denoBin = denoBinPath();
-  fs.mkdirSync(denoBin, {
-    recursive: true
-  });
+  try {
+    fs.mkdirSync(denoBin, {
+      recursive: true
+    });
+  } catch (e) {}
   fs.copyFileSync(
     path.join(toolPath, denoBinaryName),
     path.join(denoBin, denoBinaryName)

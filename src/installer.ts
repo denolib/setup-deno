@@ -1,3 +1,4 @@
+import * as os from "os";
 import * as fs from "fs";
 import * as path from "path";
 // Load tempDirectory before it gets wiped by tool-cache
@@ -6,7 +7,6 @@ let tempDirectory =
   fs.mkdtempSync(path.join(os.tmpdir(), "deno"));
 import * as core from "@actions/core";
 import * as tc from "@actions/tool-cache";
-import * as os from "os";
 import { execSync } from "child_process";
 
 export async function getDeno(version: string) {

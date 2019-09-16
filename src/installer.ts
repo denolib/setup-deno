@@ -1,26 +1,27 @@
 // Load tempDirectory before it gets wiped by tool-cache
-let tempDirectory = process.env["RUNNER_TEMPDIRECTORY"] || "";
-import * as core from "@actions/core";
-import * as io from "@actions/io";
-import * as tc from "@actions/tool-cache";
-import * as os from "os";
-import * as path from "path";
+let tempDirectory = process.env['RUNNER_TEMPDIRECTORY'] || '';
+import * as core from '@actions/core';
+import * as io from '@actions/io';
+import * as tc from '@actions/tool-cache';
+import * as os from 'os';
+import * as path from 'path';
+import { exec, execSync } from 'child_process';
 
 let osPlat: string = os.platform();
 
 if (!tempDirectory) {
   let baseLocation;
-  if (process.platform === "win32") {
+  if (process.platform === 'win32') {
     // On windows use the USERPROFILE env variable
-    baseLocation = process.env["USERPROFILE"] || "C:\\";
+    baseLocation = process.env['USERPROFILE'] || 'C:\\';
   } else {
-    if (process.platform === "darwin") {
-      baseLocation = "/Users";
+    if (process.platform === 'darwin') {
+      baseLocation = '/Users';
     } else {
-      baseLocation = "/home";
+      baseLocation = '/home';
     }
   }
-  tempDirectory = path.join(baseLocation, "actions", "temp");
+  tempDirectory = path.join(baseLocation, 'actions', 'temp');
 }
 
 //
@@ -35,7 +36,7 @@ interface INodeVersion {
 export async function getDeno(version: string) {
   // check cache
   let toolPath: string;
-  toolPath = tc.find("deno", version);
+  toolPath = tc.find('deno', version);
 
   // If not found in cache, download
   if (!toolPath) {
@@ -56,36 +57,36 @@ async function acquireDeno(version: string): Promise<string> {
   //
   // Download - a tool installer intimately knows how to get the tool (and construct urls)
   //
-  let platform: "osx" | "linux" | "win";
-  let extension: "gz" | "zip";
+  let platform: 'osx' | 'linux' | 'win';
+  let extension: 'gz' | 'zip';
   let denoBinPath: string;
 
   switch (os.platform()) {
-    case "darwin":
-      platform = "osx";
-      extension = "gz";
+    case 'darwin':
+      platform = 'osx';
+      extension = 'gz';
       denoBinPath = `${process.env.HOME}/.deno/bin`;
       break;
-    case "linux":
-      platform = "linux";
-      extension = "gz";
+    case 'linux':
+      platform = 'linux';
+      extension = 'gz';
       denoBinPath = `${process.env.HOME}/.deno/bin`;
       break;
-    case "win32":
-      platform = "win";
-      extension = "zip";
+    case 'win32':
+      platform = 'win';
+      extension = 'zip';
       denoBinPath = `${process.env.HOME}\\.deno\\bin`;
       break;
     default:
-      throw "Invalid platform";
+      throw 'Invalid platform';
   }
 
   core.debug(
     `Trying to install for platform ${platform} with extension ${extension} at path ${denoBinPath}`
   );
 
-  let archiveName = `deno_${platform}_x64.${extension}`;
-  let downloadUrl = `https://github.com/denoland/deno/releases/download/${version}/${archiveName}`;
+  let toolName = `deno_${platform}_x64`;
+  let downloadUrl = `https://github.com/denoland/deno/releases/download/${version}/${toolName}.${extension}`;
   let downloadPath: string;
 
   try {
@@ -100,23 +101,20 @@ async function acquireDeno(version: string): Promise<string> {
   // Extract
   //
   let extPath: string;
-  if (extension == "zip") {
-    extPath = await tc.extractZip(
-      path.join(downloadPath, archiveName),
-      denoBinPath
-    );
+  if (extension == 'zip') {
+    extPath = await tc.extractZip(downloadPath, denoBinPath);
   } else {
-    extPath = await tc.extractTar(
-      path.join(downloadPath, archiveName),
-      denoBinPath
-    );
+    execSync(`gzip -d ${downloadPath}`);
+    execSync(`mkdir -p ${denoBinPath}`);
+    execSync(`mv ${toolName} $${denoBinPath}`);
+    extPath = denoBinPath;
   }
   core.debug(`Extracted archive to ${extPath}`);
 
   //
   // Install into the local tool cache - deno extracts a file that matches the fileName downloaded
   //
-  let tool = path.join(extPath, `deno_${platform}_x64`);
+  let tool = path.join(extPath, toolName);
   core.debug(`Cache file ${tool} into toolcache`);
-  return await tc.cacheFile(tool, `deno`, "deno", version);
+  return await tc.cacheFile(tool, `deno`, 'deno', version);
 }

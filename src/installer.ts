@@ -121,7 +121,10 @@ async function acquireDeno(version: string): Promise<string> {
   const tempDenoPath = path.join(os.tmpdir(), "deno");
   fs.mkdirSync(tempDenoPath);
   if (extension == "zip") {
-    extPath = await tc.extractZip(downloadPath, tempDenoPath);
+    fs.renameSync(downloadPath, `${downloadPath}.zip`);
+    await tc.extractZip(`${downloadPath}.zip`);
+    extPath = tempDenoPath;
+    fs.renameSync(downloadPath, path.join(extPath, toolName));
   } else if (extension == "gz") {
     fs.renameSync(downloadPath, `${downloadPath}.gz`);
     execSync(`gzip -d ${downloadPath}.gz`);

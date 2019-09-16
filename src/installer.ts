@@ -84,7 +84,8 @@ async function acquireDeno(version: string): Promise<string> {
     `Trying to install for platform ${platform} with extension ${extension} at path ${denoBinPath}`
   );
 
-  let downloadUrl = `https://github.com/denoland/deno/releases/download/${version}/deno_${platform}_x64.${extension}`;
+  let archiveName = `deno_${platform}_x64.${extension}`;
+  let downloadUrl = `https://github.com/denoland/deno/releases/download/${version}/${archiveName}`;
   let downloadPath: string;
 
   try {
@@ -100,9 +101,15 @@ async function acquireDeno(version: string): Promise<string> {
   //
   let extPath: string;
   if (extension == "zip") {
-    extPath = await tc.extractZip(downloadPath, denoBinPath);
+    extPath = await tc.extractZip(
+      path.join(downloadPath, archiveName),
+      denoBinPath
+    );
   } else {
-    extPath = await tc.extractTar(downloadPath, denoBinPath);
+    extPath = await tc.extractTar(
+      path.join(downloadPath, archiveName),
+      denoBinPath
+    );
   }
   core.debug(`Extracted archive to ${extPath}`);
 

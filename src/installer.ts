@@ -7,7 +7,7 @@ let tempDirectory =
   fs.mkdtempSync(path.join(os.tmpdir(), "deno"));
 import * as core from "@actions/core";
 import * as tc from "@actions/tool-cache";
-import { execSync } from "child_process";
+import { ungzip } from "node-gzip";
 
 export async function getDeno(version: string) {
   // check cache
@@ -54,7 +54,7 @@ function denoBinPath(): string {
     case "win32":
       return path.join(process.env.USERPROFILE || "", ".deno", "bin");
     default:
-      throw "Invalid platform";
+      throw Error("Invalid platform");
   }
 }
 
@@ -81,7 +81,7 @@ async function acquireDeno(version: string): Promise<string> {
       executableExtension = ".exe";
       break;
     default:
-      throw "Invalid platform";
+      throw Error("Invalid platform");
   }
 
   core.debug(
@@ -114,12 +114,12 @@ async function acquireDeno(version: string): Promise<string> {
     extPath = tempDirectory;
     toolName = "deno" + executableExtension;
   } else if (extension == "gz") {
-    fs.renameSync(downloadPath, `${downloadPath}.gz`);
-    execSync(`gzip -d ${downloadPath}.gz`);
+    const buffer = fs.readFileSync(downloadPath);
+    const bin = await ungzip(buffer);
     extPath = tempDirectory;
-    fs.renameSync(downloadPath, path.join(extPath, toolName));
+    fs.writeFileSync(path.join(extPath, toolName), bin);
   } else {
-    throw "Unknown extension";
+    throw Error("Unknown extension");
   }
   core.debug(`Extracted archive to ${extPath}`);
 

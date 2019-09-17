@@ -12,6 +12,8 @@ async function run() {
     if (version) {
       // TODO: installer doesn't support proxy
       await installer.getDeno(version);
+    } else {
+      throw Error("No version specified.");
     }
   } catch (error) {
     core.setFailed(error.message);

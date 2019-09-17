@@ -1,7 +1,7 @@
-# setup-deno-action
+# setup-deno
 
 <p align="left">
-  <a href="https://github.com/denolib/setup-deno-action"><img alt="GitHub Actions status" src="https://github.com/denolib/setup-deno-action/workflows/Main%20workflow/badge.svg"></a>
+  <a href="https://github.com/denolib/setup-deno"><img alt="GitHub Actions status" src="https://github.com/denolib/setup-deno/workflows/Main%20workflow/badge.svg"></a>
 </p>
 
 This action sets up deno environment for use in actions by:
@@ -16,7 +16,7 @@ Basic:
 ```yaml
 steps:
 - uses: actions/checkout@master
-- uses: denolib/setup-deno-action@v1
+- uses: denolib/setup-deno@v1
   with:
     deno-version: 'v0.18.0'
 - run: deno https://deno.land/welcome.ts
@@ -34,7 +34,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Setup deno
-        uses: denolib/setup-deno-action@v1
+        uses: denolib/setup-deno@v1
         with:
           deno-version: ${{ matrix.deno }}
       - run: deno https://deno.land/welcome.ts

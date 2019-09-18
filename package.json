@@ -1,0 +1,43 @@
+{
+  "name": "setup-deno-action",
+  "version": "1.0.0",
+  "private": true,
+  "description": "setup deno action",
+  "main": "lib/setup-node.js",
+  "scripts": {
+    "build": "tsc",
+    "format": "prettier --write **/*.ts",
+    "format-check": "prettier --check **/*.ts",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/denolib/setup-deno-action.git"
+  },
+  "keywords": [
+    "actions",
+    "deno",
+    "setup"
+  ],
+  "author": "The Deno Authors",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.0.0",
+    "@actions/tool-cache": "^1.0.0",
+    "node-gzip": "^1.1.2"
+  },
+  "devDependencies": {
+    "@types/node": "^12.0.4",
+    "@types/node-gzip": "^1.1.0",
+    "husky": "^2.3.0",
+    "prettier": "^1.17.1",
+    "typescript": "^3.5.1"
+  },
+  "husky": {
+    "skipCI": true,
+    "hooks": {
+      "pre-commit": "npm run build && npm run format",
+      "post-commit": "npm prune --production && git add node_modules/* && git commit -m \"Husky commit correct node modules\""
+    }
+  }
+}

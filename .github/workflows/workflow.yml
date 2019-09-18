@@ -1,0 +1,33 @@
+name: Main workflow
+on: [push]
+jobs:
+  run:
+    name: Run on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@master
+
+      - name: Set up Node.js 12.x
+        uses: actions/setup-node@master
+        with:
+          node-version: 12.x
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint
+        if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macos')
+        run: npm run format-check
+
+      - name: Set up deno v0.18.0
+        uses: ./
+        with:
+          deno-version: v0.18.0
+
+      - name: Run deno
+        run: |
+          which deno
+          deno https://deno.land/welcome.ts

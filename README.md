@@ -18,7 +18,7 @@ steps:
 - uses: actions/checkout@master
 - uses: denolib/setup-deno@v1
   with:
-    deno-version: 'v0.18.0'
+    deno-version: 'v0.20.0'
 - run: deno https://deno.land/welcome.ts
 ```
 
@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-16.04
     strategy:
       matrix:
-        deno: [ 'v0.18.0', 'v0.17.0' ]
+        deno: [ 'v0.20.0', 'v0.19.0' ]
     name: Deno ${{ matrix.deno }} sample
     steps:
       - uses: actions/checkout@master

@@ -22,10 +22,10 @@ jobs:
         if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macos')
         run: npm run format-check
 
-      - name: Set up deno v0.18.0
+      - name: Set up deno v0.20.0
         uses: ./
         with:
-          deno-version: v0.18.0
+          deno-version: v0.20.0
 
       - name: Run deno
         run: |

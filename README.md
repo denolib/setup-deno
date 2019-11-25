@@ -1,7 +1,7 @@
 # setup-deno
 
 <p align="left">
-  <a href="https://github.com/denolib/setup-deno"><img alt="GitHub Actions status" src="https://github.com/denolib/setup-deno/workflows/Main%20workflow/badge.svg"></a>
+  <a href="https://github.com/denolib/setup-deno"><img alt="GitHub Actions status" src="https://github.com/denolib/setup-deno/workflows/workflow/badge.svg?branch=master"></a>
 </p>
 
 This action sets up deno environment for use in actions by:
@@ -18,8 +18,8 @@ steps:
 - uses: actions/checkout@master
 - uses: denolib/setup-deno@v1
   with:
-    deno-version: 'v0.18.0'
-- run: deno https://deno.land/welcome.ts
+    deno-version: v0.24.0
+- run: deno run https://deno.land/std/examples/welcome.ts
 ```
 
 Matrix Testing:
@@ -29,15 +29,15 @@ jobs:
     runs-on: ubuntu-16.04
     strategy:
       matrix:
-        deno: [ 'v0.18.0', 'v0.17.0' ]
+        deno: [v0.24.0, v0.23.0]
     name: Deno ${{ matrix.deno }} sample
     steps:
       - uses: actions/checkout@master
-      - name: Setup deno
+      - name: Setup Deno
         uses: denolib/setup-deno@v1
         with:
           deno-version: ${{ matrix.deno }}
-      - run: deno https://deno.land/welcome.ts
+      - run: deno run https://deno.land/std/examples/welcome.ts
 ```
 
 # License

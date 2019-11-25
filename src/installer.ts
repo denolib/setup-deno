@@ -1,137 +1,147 @@
-import * as os from "os";
-import * as fs from "fs";
-import * as path from "path";
 // Load tempDirectory before it gets wiped by tool-cache
-let tempDirectory =
-  process.env["RUNNER_TEMPDIRECTORY"] ||
-  fs.mkdtempSync(path.join(os.tmpdir(), "deno"));
+let tempDirectory = process.env["RUNNER_TEMPDIRECTORY"] || "";
+
+import * as os from "os";
+import * as path from "path";
+import * as semver from "semver";
 import * as core from "@actions/core";
 import * as tc from "@actions/tool-cache";
-import { ungzip } from "node-gzip";
+import * as exec from "@actions/exec";
+import * as io from "@actions/io";
+import * as restm from "typed-rest-client/RestClient";
+
+type Platform = "win" | "linux" | "osx";
+
+if (!tempDirectory) {
+  let baseLocation;
+  if (process.platform == "win32") {
+    // On windows use the USERPROFILE env variable
+    baseLocation = process.env["USERPROFILE"] || "C:\\";
+  } else {
+    if (process.platform == "darwin") {
+      baseLocation = "/Users";
+    } else {
+      baseLocation = "/home";
+    }
+  }
+  tempDirectory = path.join(baseLocation, "actions", "cache");
+}
+
+const osArch = os.arch();
+function osPlat() {
+  const platform = os.platform();
+  let rtv: Platform | null = null;
+  if (platform == "darwin") rtv = "osx";
+  else if (platform == "linux") rtv = "linux";
+  else if (platform == "win32") rtv = "win";
+  if (!rtv) throw new Error(`Unexpected OS ${osPlat}`);
+  return rtv as Platform;
+}
 
 export async function getDeno(version: string) {
+  version = await clearVersion(version);
+
   // check cache
   let toolPath: string;
   toolPath = tc.find("deno", version);
 
   // If not found in cache, download
   if (!toolPath) {
-    core.debug(`Downloading deno at version ${version}`);
-    // download, extract, cache
     toolPath = await acquireDeno(version);
-    core.debug(`Deno downloaded to ${toolPath}`);
-  } else {
-    core.debug(`Cached deno found at ${toolPath}`);
   }
 
-  let denoBinaryName = "deno";
-  if (os.platform() == "win32") {
-    denoBinaryName += ".exe";
+  //
+  // a tool installer initimately knows details about the layout of that tool
+  // for example, deno binary is in the bin folder after the extract on Mac/Linux.
+  // layouts could change by version, by platform etc... but that's the tool installers job
+  //
+  if (osPlat() != "win") {
+    toolPath = path.join(toolPath, "bin");
   }
-  const denoBin = denoBinPath();
-  if (!fs.existsSync(denoBin)) {
-    fs.mkdirSync(denoBin, {
-      recursive: true
-    });
-  }
-  fs.copyFileSync(
-    path.join(toolPath, denoBinaryName),
-    path.join(denoBin, denoBinaryName)
-  );
-  fs.chmodSync(path.join(denoBin, denoBinaryName), 0o755);
 
   //
   // prepend the tools path. instructs the agent to prepend for future tasks
-  core.addPath(denoBin);
+  core.addPath(toolPath);
 }
 
-function denoBinPath(): string {
-  switch (os.platform()) {
-    case "darwin":
-      return path.join(process.env.HOME || "", ".deno", "bin");
-    case "linux":
-      return path.join(process.env.HOME || "", ".deno", "bin");
-    case "win32":
-      return path.join(process.env.USERPROFILE || "", ".deno", "bin");
-    default:
-      throw Error("Invalid platform");
+async function clearVersion(version: string) {
+  const c = semver.clean(version) || "";
+  if (semver.valid(c)) {
+    version = c;
+  } else {
+    // query deno tags for a matching version
+    version = await queryLatestMatch(version);
+    if (!version) {
+      throw new Error(`Unable to find Deno version ${version}`);
+    }
   }
+  return version;
+}
+
+async function queryLatestMatch(versionSpec: string) {
+  function cmp(a: string, b: string) {
+    if (semver.gt(a, b)) return 1;
+    return -1;
+  }
+  let version = "";
+  const versions = (await getAvailableVersions()).sort(cmp);
+  for (let i = versions.length - 1; i >= 0; --i) {
+    if (semver.satisfies(versions[i], versionSpec)) {
+      version = versions[i];
+      break;
+    }
+  }
+
+  if (version) {
+    core.debug(`matched: ${version}`);
+  } else {
+    core.debug(`match not found`);
+  }
+
+  return version;
+}
+
+async function getAvailableVersions() {
+  const rest = new restm.RestClient("setup-deno");
+  const data =
+    (
+      await rest.get<{ name: string }[]>(
+        "https://api.github.com/repos/denoland/deno/tags"
+      )
+    ).result || [];
+  return data.map(v => v.name);
 }
 
 async function acquireDeno(version: string): Promise<string> {
   //
   // Download - a tool installer intimately knows how to get the tool (and construct urls)
   //
-  let platform: "osx" | "linux" | "win";
-  let extension: "gz" | "zip";
-  let executableExtension = "";
-
-  switch (os.platform()) {
-    case "darwin":
-      platform = "osx";
-      extension = "gz";
-      break;
-    case "linux":
-      platform = "linux";
-      extension = "gz";
-      break;
-    case "win32":
-      platform = "win";
-      extension = "zip";
-      executableExtension = ".exe";
-      break;
-    default:
-      throw Error("Invalid platform");
+  const c = semver.clean(version);
+  if (c) {
+    version = c;
+  } else {
+    throw new Error(`Unable to find Deno version ${version}`);
   }
-
-  core.debug(
-    `Trying to install for platform ${platform} with extension ${extension}`
-  );
-
-  let toolName = `deno_${platform}_x64`;
-  let downloadUrl = `https://github.com/denoland/deno/releases/download/${version}/${toolName}.${extension}`;
+  const fileName = `deno_${osPlat()}_${osArch}`;
+  const urlFileName = osPlat() == "win" ? `${fileName}.zip` : `${fileName}.gz`;
+  const downloadUrl = `https://github.com/denoland/deno/releases/download/v${version}/${urlFileName}`;
   let downloadPath: string;
-
-  try {
-    downloadPath = await tc.downloadTool(downloadUrl);
-  } catch (err) {
-    throw err;
-  }
-
-  core.debug(`Downloaded ${downloadUrl} to ${downloadPath}`);
+  downloadPath = await tc.downloadTool(downloadUrl);
 
   //
   // Extract
   //
-  let extPath: string;
-  if (!fs.existsSync(tempDirectory)) {
-    fs.mkdirSync(tempDirectory, {
-      recursive: true
-    });
-  }
-  if (extension == "zip") {
-    extPath = await tc.extractZip(downloadPath, tempDirectory);
-    extPath = tempDirectory;
-    toolName = "deno" + executableExtension;
-  } else if (extension == "gz") {
-    const buffer = fs.readFileSync(downloadPath);
-    const bin = await ungzip(buffer);
-    extPath = tempDirectory;
-    fs.writeFileSync(path.join(extPath, toolName), bin);
+  let extPath = "";
+  if (osPlat() == "win") {
+    extPath = await tc.extractZip(downloadPath);
   } else {
-    throw Error("Unknown extension");
+    const gzip = await io.which("gzip");
+    await exec.exec(gzip, ["-dk", downloadPath]);
   }
-  core.debug(`Extracted archive to ${extPath}`);
 
   //
   // Install into the local tool cache - deno extracts a file that matches the fileName downloaded
   //
-  let tool = path.join(extPath, toolName);
-  core.debug(`Cache file ${tool} into toolcache`);
-  return await tc.cacheFile(
-    tool,
-    "deno" + executableExtension,
-    "deno",
-    version
-  );
+  let toolRoot = path.join(extPath, fileName);
+  return await tc.cacheDir(toolRoot, "deno", version);
 }

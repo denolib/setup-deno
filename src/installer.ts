@@ -1,8 +1,6 @@
-// Load tempDirectory before it gets wiped by tool-cache
-let tempDirectory = process.env["RUNNER_TEMPDIRECTORY"] || "";
-
 import * as os from "os";
 import * as path from "path";
+import * as fs from "fs";
 import * as semver from "semver";
 import * as core from "@actions/core";
 import * as tc from "@actions/tool-cache";
@@ -13,21 +11,6 @@ import * as uuidV4 from "uuid";
 
 type Platform = "win" | "linux" | "osx";
 type Arch = "x64";
-
-if (!tempDirectory) {
-  let baseLocation;
-  if (process.platform == "win32") {
-    // On windows use the USERPROFILE env variable
-    baseLocation = process.env["USERPROFILE"] || "C:\\";
-  } else {
-    if (process.platform == "darwin") {
-      baseLocation = "/Users";
-    } else {
-      baseLocation = "/home";
-    }
-  }
-  tempDirectory = path.join(baseLocation, "actions", "cache");
-}
 
 function osArch(): Arch {
   return "x64";
@@ -143,5 +126,7 @@ export async function acquireDeno(version: string) {
   //
   // Install into the local tool cache - deno extracts a file that matches the fileName downloaded
   //
-  return await tc.cacheDir(extPath, "deno", version);
+  const toolPath = await tc.cacheDir(extPath, "deno", version);
+  fs.chmodSync(toolPath, "755");
+  return toolPath;
 }

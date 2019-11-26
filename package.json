@@ -3,12 +3,12 @@
   "version": "1.1.0",
   "private": true,
   "description": "setup deno action",
-  "main": "dist/index.js",
+  "main": "src/setup-deno.ts",
   "scripts": {
     "build": "tsc",
     "format": "prettier --write **/*.ts",
     "format-check": "prettier --check **/*.ts",
-    "release": "ncc build src/setup-deno.ts && git add -f dist/",
+    "release": "ncc build && git add -f dist/",
     "test": "jest"
   },
   "repository": {

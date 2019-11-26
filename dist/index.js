@@ -1051,231 +1051,6 @@ module.exports = require("os");
 
 /***/ }),
 
-/***/ 105:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const httpm = __webpack_require__(874);
-const util = __webpack_require__(729);
-class RestClient {
-    /**
-     * Creates an instance of the RestClient
-     * @constructor
-     * @param {string} userAgent - userAgent for requests
-     * @param {string} baseUrl - (Optional) If not specified, use full urls per request.  If supplied and a function passes a relative url, it will be appended to this
-     * @param {ifm.IRequestHandler[]} handlers - handlers are typically auth handlers (basic, bearer, ntlm supplied)
-     * @param {ifm.IRequestOptions} requestOptions - options for each http requests (http proxy setting, socket timeout)
-     */
-    constructor(userAgent, baseUrl, handlers, requestOptions) {
-        this.client = new httpm.HttpClient(userAgent, handlers, requestOptions);
-        if (baseUrl) {
-            this._baseUrl = baseUrl;
-        }
-    }
-    /**
-     * Gets a resource from an endpoint
-     * Be aware that not found returns a null.  Other error conditions reject the promise
-     * @param {string} requestUrl - fully qualified or relative url
-     * @param {IRequestOptions} requestOptions - (optional) requestOptions object
-     */
-    options(requestUrl, options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let url = util.getUrl(requestUrl, this._baseUrl);
-            let res = yield this.client.options(url, this._headersFromOptions(options));
-            return this._processResponse(res, options);
-        });
-    }
-    /**
-     * Gets a resource from an endpoint
-     * Be aware that not found returns a null.  Other error conditions reject the promise
-     * @param {string} resource - fully qualified url or relative path
-     * @param {IRequestOptions} requestOptions - (optional) requestOptions object
-     */
-    get(resource, options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let url = util.getUrl(resource, this._baseUrl);
-            let res = yield this.client.get(url, this._headersFromOptions(options));
-            return this._processResponse(res, options);
-        });
-    }
-    /**
-     * Deletes a resource from an endpoint
-     * Be aware that not found returns a null.  Other error conditions reject the promise
-     * @param {string} resource - fully qualified or relative url
-     * @param {IRequestOptions} requestOptions - (optional) requestOptions object
-     */
-    del(resource, options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let url = util.getUrl(resource, this._baseUrl);
-            let res = yield this.client.del(url, this._headersFromOptions(options));
-            return this._processResponse(res, options);
-        });
-    }
-    /**
-     * Creates resource(s) from an endpoint
-     * T type of object returned.
-     * Be aware that not found returns a null.  Other error conditions reject the promise
-     * @param {string} resource - fully qualified or relative url
-     * @param {IRequestOptions} requestOptions - (optional) requestOptions object
-     */
-    create(resource, resources, options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let url = util.getUrl(resource, this._baseUrl);
-            let headers = this._headersFromOptions(options, true);
-            let data = JSON.stringify(resources, null, 2);
-            let res = yield this.client.post(url, data, headers);
-            return this._processResponse(res, options);
-        });
-    }
-    /**
-     * Updates resource(s) from an endpoint
-     * T type of object returned.
-     * Be aware that not found returns a null.  Other error conditions reject the promise
-     * @param {string} resource - fully qualified or relative url
-     * @param {IRequestOptions} requestOptions - (optional) requestOptions object
-     */
-    update(resource, resources, options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let url = util.getUrl(resource, this._baseUrl);
-            let headers = this._headersFromOptions(options, true);
-            let data = JSON.stringify(resources, null, 2);
-            let res = yield this.client.patch(url, data, headers);
-            return this._processResponse(res, options);
-        });
-    }
-    /**
-     * Replaces resource(s) from an endpoint
-     * T type of object returned.
-     * Be aware that not found returns a null.  Other error conditions reject the promise
-     * @param {string} resource - fully qualified or relative url
-     * @param {IRequestOptions} requestOptions - (optional) requestOptions object
-     */
-    replace(resource, resources, options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let url = util.getUrl(resource, this._baseUrl);
-            let headers = this._headersFromOptions(options, true);
-            let data = JSON.stringify(resources, null, 2);
-            let res = yield this.client.put(url, data, headers);
-            return this._processResponse(res, options);
-        });
-    }
-    uploadStream(verb, requestUrl, stream, options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let url = util.getUrl(requestUrl, this._baseUrl);
-            let headers = this._headersFromOptions(options, true);
-            let res = yield this.client.sendStream(verb, url, stream, headers);
-            return this._processResponse(res, options);
-        });
-    }
-    _headersFromOptions(options, contentType) {
-        options = options || {};
-        let headers = options.additionalHeaders || {};
-        headers["Accept"] = options.acceptHeader || "application/json";
-        if (contentType) {
-            let found = false;
-            for (let header in headers) {
-                if (header.toLowerCase() == "content-type") {
-                    found = true;
-                }
-            }
-            if (!found) {
-                headers["Content-Type"] = 'application/json; charset=utf-8';
-            }
-        }
-        return headers;
-    }
-    static dateTimeDeserializer(key, value) {
-        if (typeof value === 'string') {
-            let a = new Date(value);
-            if (!isNaN(a.valueOf())) {
-                return a;
-            }
-        }
-        return value;
-    }
-    _processResponse(res, options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
-                const statusCode = res.message.statusCode;
-                const response = {
-                    statusCode: statusCode,
-                    result: null,
-                    headers: {}
-                };
-                // not found leads to null obj returned
-                if (statusCode == httpm.HttpCodes.NotFound) {
-                    resolve(response);
-                }
-                let obj;
-                let contents;
-                // get the result from the body
-                try {
-                    contents = yield res.readBody();
-                    if (contents && contents.length > 0) {
-                        if (options && options.deserializeDates) {
-                            obj = JSON.parse(contents, RestClient.dateTimeDeserializer);
-                        }
-                        else {
-                            obj = JSON.parse(contents);
-                        }
-                        if (options && options.responseProcessor) {
-                            response.result = options.responseProcessor(obj);
-                        }
-                        else {
-                            response.result = obj;
-                        }
-                    }
-                    response.headers = res.message.headers;
-                }
-                catch (err) {
-                    // Invalid resource (contents not json);  leaving result obj null
-                }
-                // note that 3xx redirects are handled by the http layer.
-                if (statusCode > 299) {
-                    let msg;
-                    // if exception/error in body, attempt to get better error
-                    if (obj && obj.message) {
-                        msg = obj.message;
-                    }
-                    else if (contents && contents.length > 0) {
-                        // it may be the case that the exception is in the body message as string
-                        msg = contents;
-                    }
-                    else {
-                        msg = "Failed request: (" + statusCode + ")";
-                    }
-                    let err = new Error(msg);
-                    // attach statusCode and body obj (if available) to the error object
-                    err['statusCode'] = statusCode;
-                    if (response.result) {
-                        err['result'] = response.result;
-                    }
-                    reject(err);
-                }
-                else {
-                    resolve(response);
-                }
-            }));
-        });
-    }
-}
-exports.RestClient = RestClient;
-
-
-/***/ }),
-
 /***/ 117:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -3304,6 +3079,13 @@ function escape(s) {
 
 /***/ }),
 
+/***/ 463:
+/***/ (function(module) {
+
+module.exports = [{"name":"v0.24.0","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.24.0","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.24.0","commit":{"sha":"0fffef8e5afed754358efc5b41d93549592cd941","url":"https://api.github.com/repos/denoland/deno/commits/0fffef8e5afed754358efc5b41d93549592cd941"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjI0LjA="},{"name":"v0.23.0","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.23.0","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.23.0","commit":{"sha":"a611788834e40153ef27c8f1d6b7fd52c8a016b1","url":"https://api.github.com/repos/denoland/deno/commits/a611788834e40153ef27c8f1d6b7fd52c8a016b1"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjIzLjA="},{"name":"v0.22.0","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.22.0","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.22.0","commit":{"sha":"71efe6f2c530d1cb9e8a2679f5778e2c034a9d0d","url":"https://api.github.com/repos/denoland/deno/commits/71efe6f2c530d1cb9e8a2679f5778e2c034a9d0d"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjIyLjA="},{"name":"v0.21.0","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.21.0","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.21.0","commit":{"sha":"4e88ba9a114279b3969d5ccca1cca0f74c8fc1fd","url":"https://api.github.com/repos/denoland/deno/commits/4e88ba9a114279b3969d5ccca1cca0f74c8fc1fd"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjIxLjA="},{"name":"v0.20.0","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.20.0","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.20.0","commit":{"sha":"a4b27db21a10f9913460c054c98fce59f3dd157d","url":"https://api.github.com/repos/denoland/deno/commits/a4b27db21a10f9913460c054c98fce59f3dd157d"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjIwLjA="},{"name":"v0.19.0","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.19.0","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.19.0","commit":{"sha":"3892cf59018acd71dd4bc1099d747bd683cd4118","url":"https://api.github.com/repos/denoland/deno/commits/3892cf59018acd71dd4bc1099d747bd683cd4118"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjE5LjA="},{"name":"v0.18.0","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.18.0","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.18.0","commit":{"sha":"7e3296dad92cee2e8b77baedfbeca38aa297928e","url":"https://api.github.com/repos/denoland/deno/commits/7e3296dad92cee2e8b77baedfbeca38aa297928e"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjE4LjA="},{"name":"v0.17.0","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.17.0","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.17.0","commit":{"sha":"82588ec09c199683cff88097e1b90649497239c7","url":"https://api.github.com/repos/denoland/deno/commits/82588ec09c199683cff88097e1b90649497239c7"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjE3LjA="},{"name":"v0.16.0","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.16.0","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.16.0","commit":{"sha":"0809b06a3938868f364f1343b0de4d5d9686495d","url":"https://api.github.com/repos/denoland/deno/commits/0809b06a3938868f364f1343b0de4d5d9686495d"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjE2LjA="},{"name":"v0.15.0","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.15.0","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.15.0","commit":{"sha":"58f0e9b9b1b53ca486ef38ae662b98cbde839248","url":"https://api.github.com/repos/denoland/deno/commits/58f0e9b9b1b53ca486ef38ae662b98cbde839248"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjE1LjA="},{"name":"v0.14.0","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.14.0","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.14.0","commit":{"sha":"83d5362f1d7d8589b862de57912135067a8278c7","url":"https://api.github.com/repos/denoland/deno/commits/83d5362f1d7d8589b862de57912135067a8278c7"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjE0LjA="},{"name":"v0.13.0","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.13.0","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.13.0","commit":{"sha":"b3541c38f5672ffb4a29d66dca19d88b9ecae478","url":"https://api.github.com/repos/denoland/deno/commits/b3541c38f5672ffb4a29d66dca19d88b9ecae478"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjEzLjA="},{"name":"v0.12.0","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.12.0","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.12.0","commit":{"sha":"4e248ecda9bb31478c6db7f5e76fa12b64b516a9","url":"https://api.github.com/repos/denoland/deno/commits/4e248ecda9bb31478c6db7f5e76fa12b64b516a9"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjEyLjA="},{"name":"v0.11.0","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.11.0","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.11.0","commit":{"sha":"92ac616708cb067a1b895283913c5ecd25c6d873","url":"https://api.github.com/repos/denoland/deno/commits/92ac616708cb067a1b895283913c5ecd25c6d873"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjExLjA="},{"name":"v0.10.0","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.10.0","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.10.0","commit":{"sha":"c56df45355c8e68eabbfa62021e7ca7484115c0b","url":"https://api.github.com/repos/denoland/deno/commits/c56df45355c8e68eabbfa62021e7ca7484115c0b"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjEwLjA="},{"name":"v0.9.0","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.9.0","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.9.0","commit":{"sha":"7b06aa37342c021f9f1fac99125847d134e67001","url":"https://api.github.com/repos/denoland/deno/commits/7b06aa37342c021f9f1fac99125847d134e67001"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjkuMA=="},{"name":"v0.8.0","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.8.0","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.8.0","commit":{"sha":"d60bdb6350f2583e35d020f6cebb6aa30262fbcc","url":"https://api.github.com/repos/denoland/deno/commits/d60bdb6350f2583e35d020f6cebb6aa30262fbcc"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjguMA=="},{"name":"v0.7.0","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.7.0","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.7.0","commit":{"sha":"5265bd7cb1f86af99b01d73c537d52a50df95fe2","url":"https://api.github.com/repos/denoland/deno/commits/5265bd7cb1f86af99b01d73c537d52a50df95fe2"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjcuMA=="},{"name":"v0.6.0","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.6.0","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.6.0","commit":{"sha":"22feb74ba12215597416b5531f8a557302283e79","url":"https://api.github.com/repos/denoland/deno/commits/22feb74ba12215597416b5531f8a557302283e79"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjYuMA=="},{"name":"v0.5.0","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.5.0","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.5.0","commit":{"sha":"23aca36d52220efbfbc07abbe165bd2c9ade2009","url":"https://api.github.com/repos/denoland/deno/commits/23aca36d52220efbfbc07abbe165bd2c9ade2009"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjUuMA=="},{"name":"v0.4.0","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.4.0","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.4.0","commit":{"sha":"2aae09c2b869bf5d0bc5fd269464e8ac504528ea","url":"https://api.github.com/repos/denoland/deno/commits/2aae09c2b869bf5d0bc5fd269464e8ac504528ea"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjQuMA=="},{"name":"v0.3.11","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.3.11","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.3.11","commit":{"sha":"3b1e2f1ad42cfebb6f2568e54c82c5ac3c8fe3d4","url":"https://api.github.com/repos/denoland/deno/commits/3b1e2f1ad42cfebb6f2568e54c82c5ac3c8fe3d4"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjMuMTE="},{"name":"v0.3.10","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.3.10","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.3.10","commit":{"sha":"40d8ef1ec9f5e50017c41af8bf3b9f8454f97544","url":"https://api.github.com/repos/denoland/deno/commits/40d8ef1ec9f5e50017c41af8bf3b9f8454f97544"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjMuMTA="},{"name":"v0.3.9","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.3.9","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.3.9","commit":{"sha":"e725b26b289fbe96b679039ba4203f10f7229ab9","url":"https://api.github.com/repos/denoland/deno/commits/e725b26b289fbe96b679039ba4203f10f7229ab9"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjMuOQ=="},{"name":"v0.3.8","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.3.8","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.3.8","commit":{"sha":"0796a8f2f75005df95ef6115a4bdf6dd66e58dc3","url":"https://api.github.com/repos/denoland/deno/commits/0796a8f2f75005df95ef6115a4bdf6dd66e58dc3"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjMuOA=="},{"name":"v0.3.7","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.3.7","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.3.7","commit":{"sha":"8584d80cfd26111825af5a69fc6ae4c367ad0700","url":"https://api.github.com/repos/denoland/deno/commits/8584d80cfd26111825af5a69fc6ae4c367ad0700"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjMuNw=="},{"name":"v0.3.6","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.3.6","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.3.6","commit":{"sha":"744e56cb58f90acde7baf8811676021fb55b2f2a","url":"https://api.github.com/repos/denoland/deno/commits/744e56cb58f90acde7baf8811676021fb55b2f2a"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjMuNg=="},{"name":"v0.3.5","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.3.5","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.3.5","commit":{"sha":"b965c7ab367a417fb7bdde2eaf38312179e5c183","url":"https://api.github.com/repos/denoland/deno/commits/b965c7ab367a417fb7bdde2eaf38312179e5c183"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjMuNQ=="},{"name":"v0.3.4","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.3.4","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.3.4","commit":{"sha":"223a2adbb46cb33e75ffe861ecaff6ff7e6d555e","url":"https://api.github.com/repos/denoland/deno/commits/223a2adbb46cb33e75ffe861ecaff6ff7e6d555e"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjMuNA=="},{"name":"v0.3.3","zipball_url":"https://api.github.com/repos/denoland/deno/zipball/v0.3.3","tarball_url":"https://api.github.com/repos/denoland/deno/tarball/v0.3.3","commit":{"sha":"3dbb06e699398549e8cfabc896ef3256ab433cba","url":"https://api.github.com/repos/denoland/deno/commits/3dbb06e699398549e8cfabc896ef3256ab433cba"},"node_id":"MDM6UmVmMTMzNDQyMzg0OnYwLjMuMw=="}];
+
+/***/ }),
+
 /***/ 470:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -4219,49 +4001,6 @@ module.exports = bytesToUuid;
 
 /***/ }),
 
-/***/ 729:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-Object.defineProperty(exports, "__esModule", { value: true });
-const url = __webpack_require__(835);
-const path = __webpack_require__(622);
-/**
- * creates an url from a request url and optional base url (http://server:8080)
- * @param {string} resource - a fully qualified url or relative path
- * @param {string} baseUrl - an optional baseUrl (http://server:8080)
- * @return {string} - resultant url
- */
-function getUrl(resource, baseUrl) {
-    const pathApi = path.posix || path;
-    if (!baseUrl) {
-        return resource;
-    }
-    else if (!resource) {
-        return baseUrl;
-    }
-    else {
-        const base = url.parse(baseUrl);
-        const resultantUrl = url.parse(resource);
-        // resource (specific per request) elements take priority
-        resultantUrl.protocol = resultantUrl.protocol || base.protocol;
-        resultantUrl.auth = resultantUrl.auth || base.auth;
-        resultantUrl.host = resultantUrl.host || base.host;
-        resultantUrl.pathname = pathApi.resolve(base.pathname, resultantUrl.pathname);
-        if (!resultantUrl.pathname.endsWith('/') && resource.endsWith('/')) {
-            resultantUrl.pathname += '/';
-        }
-        return url.format(resultantUrl);
-    }
-}
-exports.getUrl = getUrl;
-
-
-/***/ }),
-
 /***/ 747:
 /***/ (function(module) {
 
@@ -4840,8 +4579,8 @@ const core = __webpack_require__(470);
 const tc = __webpack_require__(533);
 const exec = __webpack_require__(986);
 const io = __webpack_require__(1);
-const restm = __webpack_require__(105);
 const uuidV4 = __webpack_require__(898);
+const releases = __webpack_require__(463);
 function osArch() {
     return "x64";
 }
@@ -4923,9 +4662,7 @@ function queryLatestMatch(versionSpec) {
 }
 function getAvailableVersions() {
     return __awaiter(this, void 0, void 0, function* () {
-        const rest = new restm.RestClient("setup-deno");
-        const data = (yield rest.get("https://api.github.com/repos/denoland/deno/tags")).result || [];
-        return data.map(v => v.name);
+        return releases.map(v => v.name);
     });
 }
 function acquireDeno(version) {

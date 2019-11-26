@@ -1,5 +1,32 @@
 import * as os from "os";
 import * as path from "path";
+
+// On load grab temp directory and cache directory and remove them from env (currently don't want to expose this)
+let tempDirectory: string = process.env["RUNNER_TEMP"] || "";
+let cacheRoot: string = process.env["RUNNER_TOOL_CACHE"] || "";
+// If directories not found, place them in common temp locations
+if (!tempDirectory || !cacheRoot) {
+  let baseLocation: string;
+  if (osPlat() == "win") {
+    // On windows use the USERPROFILE env variable
+    baseLocation = process.env["USERPROFILE"] || "C:\\";
+  } else {
+    if (process.platform === "darwin") {
+      baseLocation = process.env["HOME"] || "/Users";
+    } else {
+      baseLocation = process.env["HOME"] || "/home";
+    }
+  }
+  if (!tempDirectory) {
+    tempDirectory = path.join(baseLocation, "actions", "temp");
+  }
+  if (!cacheRoot) {
+    cacheRoot = path.join(baseLocation, "actions", "cache");
+  }
+  process.env["RUNNER_TEMP"] = tempDirectory;
+  process.env["RUNNER_TOOL_CACHE"] = cacheRoot;
+}
+
 import * as fs from "fs";
 import * as semver from "semver";
 import * as core from "@actions/core";
@@ -121,12 +148,12 @@ export async function acquireDeno(version: string) {
     await io.mv(downloadPath, gzFile);
     const gzPzth = await io.which("gzip");
     await exec.exec(gzPzth, ["-d", gzFile]);
+    fs.chmodSync(path.join(extPath, "deno"), "755");
   }
 
   //
   // Install into the local tool cache - deno extracts a file that matches the fileName downloaded
   //
   const toolPath = await tc.cacheDir(extPath, "deno", version);
-  fs.chmodSync(toolPath, "755");
   return toolPath;
 }

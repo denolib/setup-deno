@@ -4807,6 +4807,33 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const os = __webpack_require__(87);
 const path = __webpack_require__(622);
+// On load grab temp directory and cache directory and remove them from env (currently don't want to expose this)
+let tempDirectory = process.env["RUNNER_TEMP"] || "";
+let cacheRoot = process.env["RUNNER_TOOL_CACHE"] || "";
+// If directories not found, place them in common temp locations
+if (!tempDirectory || !cacheRoot) {
+    let baseLocation;
+    if (osPlat() == "win") {
+        // On windows use the USERPROFILE env variable
+        baseLocation = process.env["USERPROFILE"] || "C:\\";
+    }
+    else {
+        if (process.platform === "darwin") {
+            baseLocation = process.env["HOME"] || "/Users";
+        }
+        else {
+            baseLocation = process.env["HOME"] || "/home";
+        }
+    }
+    if (!tempDirectory) {
+        tempDirectory = path.join(baseLocation, "actions", "temp");
+    }
+    if (!cacheRoot) {
+        cacheRoot = path.join(baseLocation, "actions", "cache");
+    }
+    process.env["RUNNER_TEMP"] = tempDirectory;
+    process.env["RUNNER_TOOL_CACHE"] = cacheRoot;
+}
 const fs = __webpack_require__(747);
 const semver = __webpack_require__(280);
 const core = __webpack_require__(470);
@@ -4930,12 +4957,12 @@ function acquireDeno(version) {
             yield io.mv(downloadPath, gzFile);
             const gzPzth = yield io.which("gzip");
             yield exec.exec(gzPzth, ["-d", gzFile]);
+            fs.chmodSync(path.join(extPath, "deno"), "755");
         }
         //
         // Install into the local tool cache - deno extracts a file that matches the fileName downloaded
         //
         const toolPath = yield tc.cacheDir(extPath, "deno", version);
-        fs.chmodSync(toolPath, "755");
         return toolPath;
     });
 }

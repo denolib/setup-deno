@@ -3713,20 +3713,6 @@ function extractTar(file, dest, flags = 'xz') {
     });
 }
 exports.extractTar = extractTar;
-function extractGz(file, dest, flags = '-dk') {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (!file) {
-            throw new Error("parameter 'file' is required");
-        }
-        dest = dest || (yield _createExtractFolder(dest));
-        const gzPath = yield io.which('gzip', true);
-        const mvPath = yield io.which('mv', true);
-        yield exec_1.exec(`"${gzPath}"`, [flags, file]);
-        yield exec_1.exec(`"${mvPath}"`, [file, dest]);
-        return dest;
-    });
-}
-  exports.extractGz = extractGz
 /**
  * Extract a zip
  *
@@ -4819,10 +4805,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// Load tempDirectory before it gets wiped by tool-cache
-let tempDirectory = process.env["RUNNER_TEMPDIRECTORY"] || "";
 const os = __webpack_require__(87);
 const path = __webpack_require__(622);
+const fs = __webpack_require__(747);
 const semver = __webpack_require__(280);
 const core = __webpack_require__(470);
 const tc = __webpack_require__(533);
@@ -4830,22 +4815,6 @@ const exec = __webpack_require__(986);
 const io = __webpack_require__(1);
 const restm = __webpack_require__(105);
 const uuidV4 = __webpack_require__(898);
-if (!tempDirectory) {
-    let baseLocation;
-    if (process.platform == "win32") {
-        // On windows use the USERPROFILE env variable
-        baseLocation = process.env["USERPROFILE"] || "C:\\";
-    }
-    else {
-        if (process.platform == "darwin") {
-            baseLocation = "/Users";
-        }
-        else {
-            baseLocation = "/home";
-        }
-    }
-    tempDirectory = path.join(baseLocation, "actions", "cache");
-}
 function osArch() {
     return "x64";
 }
@@ -4965,7 +4934,9 @@ function acquireDeno(version) {
         //
         // Install into the local tool cache - deno extracts a file that matches the fileName downloaded
         //
-        return yield tc.cacheDir(extPath, "deno", version);
+        const toolPath = yield tc.cacheDir(extPath, "deno", version);
+        fs.chmodSync(toolPath, "755");
+        return toolPath;
     });
 }
 exports.acquireDeno = acquireDeno;

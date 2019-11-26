@@ -9,6 +9,7 @@ import * as tc from "@actions/tool-cache";
 import * as exec from "@actions/exec";
 import * as io from "@actions/io";
 import * as restm from "typed-rest-client/RestClient";
+import * as uuidV4 from "uuid";
 
 type Platform = "win" | "linux" | "osx";
 type Arch = "x64";
@@ -57,16 +58,7 @@ export async function getDeno(version: string) {
     core.debug(`Downloading deno at version ${version}`);
     toolPath = await acquireDeno(version);
   }
-  //
-  // a tool installer initimately knows details about the layout of that tool
-  // for example, deno binary is in the bin folder after the extract on Mac/Linux.
-  // layouts could change by version, by platform etc... but that's the tool installers job
-  //
-  if (osPlat() != "win") {
-    toolPath = path.join(toolPath, "bin");
-  }
 
-  //
   // prepend the tools path. instructs the agent to prepend for future tasks
   core.addPath(toolPath);
 }
@@ -132,7 +124,7 @@ export async function acquireDeno(version: string) {
   const fileName = `deno_${osPlat()}_${osArch()}`;
   const urlFileName = osPlat() == "win" ? `${fileName}.zip` : `${fileName}.gz`;
   const downloadUrl = `https://github.com/denoland/deno/releases/download/v${version}/${urlFileName}`;
-  const downloadPath = await tc.downloadTool(downloadUrl);
+  let downloadPath = await tc.downloadTool(downloadUrl);
 
   //
   // Extract
@@ -141,8 +133,11 @@ export async function acquireDeno(version: string) {
   if (osPlat() == "win") {
     extPath = await tc.extractZip(downloadPath);
   } else {
-    const gzip = await io.which("gzip");
-    await exec.exec(gzip, ["-dk", downloadPath]);
+    extPath = path.join(downloadPath, "..", uuidV4());
+    const gzFile = path.join(extPath, "deno.gz");
+    await io.mv(downloadPath, gzFile);
+    const gzPzth = await io.which("gzip");
+    await exec.exec(gzPzth, ["-d", gzFile]);
   }
 
   //

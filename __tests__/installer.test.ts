@@ -28,7 +28,7 @@ process.env["RUNNER_TOOL_CACHE"] = toolDir;
 process.env["RUNNER_TEMP"] = tempDir;
 import * as installer from "../src/installer";
 
-const IS_WINDOWS = process.platform === "win32";
+const EXTENSION = process.platform == "win32" ? ".exe" : "";
 
 describe("installer tests", () => {
   beforeAll(async () => {
@@ -41,11 +41,7 @@ describe("installer tests", () => {
     const denoDir = path.join(toolDir, "deno", "0.20.0", os.arch());
     console.log(`${denoDir}.complete`);
     expect(fs.existsSync(`${denoDir}.complete`)).toBe(true);
-    if (IS_WINDOWS) {
-      expect(fs.existsSync(path.join(denoDir, "deno.exe"))).toBe(true);
-    } else {
-      expect(fs.existsSync(path.join(denoDir, "bin", "deno"))).toBe(true);
-    }
+    expect(fs.existsSync(path.join(denoDir, `deno${EXTENSION}`))).toBe(true);
   }, 100000);
 
   it("Throws if no location contains correct deno version", async () => {
@@ -63,11 +59,7 @@ describe("installer tests", () => {
     const denoDir = path.join(toolDir, "deno", "0.21.0", os.arch());
 
     expect(fs.existsSync(`${denoDir}.complete`)).toBe(true);
-    if (IS_WINDOWS) {
-      expect(fs.existsSync(path.join(denoDir, "deno.exe"))).toBe(true);
-    } else {
-      expect(fs.existsSync(path.join(denoDir, "bin", "deno"))).toBe(true);
-    }
+    expect(fs.existsSync(path.join(denoDir, `deno${EXTENSION}`))).toBe(true);
   }, 100000);
 
   it("Uses version of deno installed in cache", async () => {

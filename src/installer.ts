@@ -11,6 +11,7 @@ import * as io from "@actions/io";
 import * as restm from "typed-rest-client/RestClient";
 
 type Platform = "win" | "linux" | "osx";
+type Arch = "x64";
 
 if (!tempDirectory) {
   let baseLocation;
@@ -27,7 +28,9 @@ if (!tempDirectory) {
   tempDirectory = path.join(baseLocation, "actions", "cache");
 }
 
-const osArch = os.arch();
+function osArch(): Arch {
+  return "x64";
+}
 function osPlat() {
   const platform = os.platform();
   let rtv: Platform | null = null;
@@ -39,17 +42,21 @@ function osPlat() {
 }
 
 export async function getDeno(version: string) {
-  version = await clearVersion(version);
-
-  // check cache
   let toolPath: string;
-  toolPath = tc.find("deno", version);
+  walk: {
+    // check cache
+    toolPath = tc.find("deno", version);
+    if (toolPath) break walk;
 
-  // If not found in cache, download
-  if (!toolPath) {
+    version = await clearVersion(version);
+    // check cache
+    toolPath = tc.find("deno", version);
+    if (toolPath) break walk;
+
+    // If not found in cache, download
+    core.debug(`Downloading deno at version ${version}`);
     toolPath = await acquireDeno(version);
   }
-
   //
   // a tool installer initimately knows details about the layout of that tool
   // for example, deno binary is in the bin folder after the extract on Mac/Linux.
@@ -64,7 +71,7 @@ export async function getDeno(version: string) {
   core.addPath(toolPath);
 }
 
-async function clearVersion(version: string) {
+export async function clearVersion(version: string) {
   const c = semver.clean(version) || "";
   if (semver.valid(c)) {
     version = c;
@@ -112,7 +119,7 @@ async function getAvailableVersions() {
   return data.map(v => v.name);
 }
 
-async function acquireDeno(version: string): Promise<string> {
+export async function acquireDeno(version: string) {
   //
   // Download - a tool installer intimately knows how to get the tool (and construct urls)
   //
@@ -122,11 +129,11 @@ async function acquireDeno(version: string): Promise<string> {
   } else {
     throw new Error(`Unable to find Deno version ${version}`);
   }
-  const fileName = `deno_${osPlat()}_${osArch}`;
+  const fileName = `deno_${osPlat()}_${osArch()}`;
   const urlFileName = osPlat() == "win" ? `${fileName}.zip` : `${fileName}.gz`;
-  const downloadUrl = `https://github.com/denoland/deno/releases/download/v${version}/${urlFileName}`;
-  let downloadPath: string;
-  downloadPath = await tc.downloadTool(downloadUrl);
+  // const downloadUrl = `https://github.com/denoland/deno/releases/download/v${version}/${urlFileName}`;
+  const downloadUrl = `http://127.0.0.1:8080/v${version}/${urlFileName}`;
+  const downloadPath = await tc.downloadTool(downloadUrl);
 
   //
   // Extract
@@ -142,6 +149,5 @@ async function acquireDeno(version: string): Promise<string> {
   //
   // Install into the local tool cache - deno extracts a file that matches the fileName downloaded
   //
-  let toolRoot = path.join(extPath, fileName);
-  return await tc.cacheDir(toolRoot, "deno", version);
+  return await tc.cacheDir(extPath, "deno", version);
 }

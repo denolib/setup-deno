@@ -22,8 +22,8 @@ jobs:
         if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macos')
         run: npm run format-check
 
-      - name: Set up deno 0.x
-        uses: denolib/setup-deno@master
+      - name: Set up Deno 0.x
+        uses: ./
         with:
           deno-version: 0.x
 

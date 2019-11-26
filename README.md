@@ -1,6 +1,6 @@
 # setup-deno
 
-[![GitHub Actions status](https://github.com/denolib/setup-deno/workflows/ci/badge.svg?branch=master)](https://github.com/denolib/setup-deno/actions)
+[![GitHub Actions status](https://github.com/denolib/setup-deno/workflows/Main%20workflow/badge.svg?branch=master)](https://github.com/denolib/setup-deno/actions)
 
 This action sets up deno environment for use in actions by:
 

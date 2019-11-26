@@ -11,7 +11,6 @@ async function run() {
     if (!version) {
       version = core.getInput("deno-version");
     }
-    core.debug(`Installing deno at version ${version}`);
     if (version) {
       // TODO: installer doesn't support proxy
       await installer.getDeno(version);

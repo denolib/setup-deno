@@ -19,7 +19,6 @@ jobs:
         run: npm install
 
       - name: Lint
-        if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macos')
         run: npm run format-check
 
       - name: Set up Deno 0.x

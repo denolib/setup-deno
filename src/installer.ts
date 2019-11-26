@@ -131,8 +131,7 @@ export async function acquireDeno(version: string) {
   }
   const fileName = `deno_${osPlat()}_${osArch()}`;
   const urlFileName = osPlat() == "win" ? `${fileName}.zip` : `${fileName}.gz`;
-  // const downloadUrl = `https://github.com/denoland/deno/releases/download/v${version}/${urlFileName}`;
-  const downloadUrl = `http://127.0.0.1:8080/v${version}/${urlFileName}`;
+  const downloadUrl = `https://github.com/denoland/deno/releases/download/v${version}/${urlFileName}`;
   const downloadPath = await tc.downloadTool(downloadUrl);
 
   //

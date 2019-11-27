@@ -1,0 +1,33 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  run:
+    name: Run on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+    steps:
+      - uses: actions/checkout@master
+
+      - name: Set up Node.js 12.x
+        uses: actions/setup-node@master
+        with:
+          node-version: 12.x
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint
+        run: npm run format-check
+
+      - name: Test
+        run: npm test
+
+      - name: Set up Deno
+        uses: ./
+
+      - name: Run deno
+        run: |
+          deno --version
+          deno run https://deno.land/std/examples/welcome.ts

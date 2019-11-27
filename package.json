@@ -1,18 +1,19 @@
 {
-  "name": "setup-deno-action",
-  "version": "1.0.0",
+  "name": "setup-deno",
+  "version": "1.1.0",
   "private": true,
   "description": "setup deno action",
-  "main": "lib/setup-node.js",
+  "main": "src/setup-deno.ts",
   "scripts": {
     "build": "tsc",
     "format": "prettier --write **/*.ts",
     "format-check": "prettier --check **/*.ts",
+    "release": "ncc build && git add -f dist/",
     "test": "jest"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/denolib/setup-deno-action.git"
+    "url": "git+https://github.com/denolib/setup-deno.git"
   },
   "keywords": [
     "actions",
@@ -22,22 +23,31 @@
   "author": "The Deno Authors",
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^1.0.0",
-    "@actions/tool-cache": "^1.0.0",
-    "node-gzip": "^1.1.2"
+    "@actions/core": "^1.2.0",
+    "@actions/io": "^1.0.1",
+    "@actions/exec": "^1.0.1",
+    "@actions/tool-cache": "^1.1.2",
+    "semver": "^6.3.0",
+    "typed-rest-client": "1.5.0",
+    "uuid": "3.3.3"
   },
   "devDependencies": {
-    "@types/node": "^12.0.4",
-    "@types/node-gzip": "^1.1.0",
-    "husky": "^2.3.0",
-    "prettier": "^1.17.1",
-    "typescript": "^3.5.1"
+    "@zeit/ncc": "^0.20.5",
+    "@types/jest": "^24.0.23",
+    "@types/node": "^12.12.12",
+    "@types/semver": "^6.2.0",
+    "@types/uuid": "^3.4.6",
+    "husky": "^3.1.0",
+    "jest": "^24.9.0",
+    "jest-circus": "^24.9.0",
+    "prettier": "^1.19.1",
+    "ts-jest": "^24.2.0",
+    "typescript": "^3.7.2"
   },
   "husky": {
     "skipCI": true,
     "hooks": {
-      "pre-commit": "npm run build && npm run format",
-      "post-commit": "npm prune --production && git add node_modules/* && git commit -m \"Husky commit correct node modules\""
+      "pre-commit": "npm run build && npm run format"
     }
   }
 }

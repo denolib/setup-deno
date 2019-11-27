@@ -29,5 +29,5 @@ jobs:
 
       - name: Run deno
         run: |
-          deno version
+          deno --version
           deno run https://deno.land/std/examples/welcome.ts

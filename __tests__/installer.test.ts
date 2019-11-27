@@ -85,7 +85,7 @@ describe("installer tests", () => {
     return;
   });
 
-  it("Resolves semantic versions of node installed in cache", async () => {
+  it("Resolves semantic versions of deno installed in cache", async () => {
     const deno: string = path.join(toolDir, "deno", "252.0.0", os.arch());
     await io.mkdirP(deno);
     fs.writeFileSync(`${deno}.complete`, "hello");

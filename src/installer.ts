@@ -34,11 +34,7 @@ import * as tc from "@actions/tool-cache";
 import * as exec from "@actions/exec";
 import * as io from "@actions/io";
 import * as uuidV4 from "uuid";
-
-// TODO: wait for gh-pages deployed
 import * as restm from "typed-rest-client/RestClient";
-
-import releases = require("./release.json");
 
 type Platform = "win" | "linux" | "osx";
 type Arch = "x64";
@@ -115,17 +111,14 @@ async function queryLatestMatch(versionSpec: string) {
 }
 
 async function getAvailableVersions() {
-  //
-  // Following cause to MacOS CI red
-  //
-  // const rest = new restm.RestClient("setup-deno");
-  // const data =
-  //   (
-  //     await rest.get<{ name: string }[]>(
-  //       "https://api.github.com/repos/denoland/deno/tags"
-  //     )
-  //   ).result || [];
-  return releases.map(v => v.name);
+  const rest = new restm.RestClient("setup-deno");
+  const data =
+    (
+      await rest.get<{ name: string }[]>(
+        "https://denolib.github.io/setup-deno/release.json"
+      )
+    ).result || [];
+  return data.map(v => v.name);
 }
 
 export async function acquireDeno(version: string) {

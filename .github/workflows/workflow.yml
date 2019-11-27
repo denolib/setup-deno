@@ -21,10 +21,11 @@ jobs:
       - name: Lint
         run: npm run format-check
 
+      - name: Test
+        run: npm test
+
       - name: Set up Deno 0.x
         uses: ./
-        with:
-          deno-version: 0.x
 
       - name: Run deno
         run: deno run https://deno.land/std/examples/welcome.ts

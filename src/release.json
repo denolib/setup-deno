@@ -1,5 +1,15 @@
 [
   {
+    "name": "v0.25.0",
+    "zipball_url": "https://api.github.com/repos/denoland/deno/zipball/v0.25.0",
+    "tarball_url": "https://api.github.com/repos/denoland/deno/tarball/v0.25.0",
+    "commit": {
+      "sha": "2cd22b5437a375f0e33f26327101afb818a03802",
+      "url": "https://api.github.com/repos/denoland/deno/commits/2cd22b5437a375f0e33f26327101afb818a03802"
+    },
+    "node_id": "MDM6UmVmMTMzNDQyMzg0OnYwLjI1LjA="
+  },
+  {
     "name": "v0.24.0",
     "zipball_url": "https://api.github.com/repos/denoland/deno/zipball/v0.24.0",
     "tarball_url": "https://api.github.com/repos/denoland/deno/tarball/v0.24.0",
@@ -288,15 +298,5 @@
       "url": "https://api.github.com/repos/denoland/deno/commits/223a2adbb46cb33e75ffe861ecaff6ff7e6d555e"
     },
     "node_id": "MDM6UmVmMTMzNDQyMzg0OnYwLjMuNA=="
-  },
-  {
-    "name": "v0.3.3",
-    "zipball_url": "https://api.github.com/repos/denoland/deno/zipball/v0.3.3",
-    "tarball_url": "https://api.github.com/repos/denoland/deno/tarball/v0.3.3",
-    "commit": {
-      "sha": "3dbb06e699398549e8cfabc896ef3256ab433cba",
-      "url": "https://api.github.com/repos/denoland/deno/commits/3dbb06e699398549e8cfabc896ef3256ab433cba"
-    },
-    "node_id": "MDM6UmVmMTMzNDQyMzg0OnYwLjMuMw=="
   }
 ]

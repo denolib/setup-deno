@@ -24,8 +24,10 @@ jobs:
       - name: Test
         run: npm test
 
-      - name: Set up Deno 0.x
+      - name: Set up Deno
         uses: ./
 
       - name: Run deno
-        run: deno run https://deno.land/std/examples/welcome.ts
+        run: |
+          deno version
+          deno run https://deno.land/std/examples/welcome.ts

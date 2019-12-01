@@ -48,7 +48,7 @@ function osPlat() {
   if (platform == "darwin") rtv = "osx";
   else if (platform == "linux") rtv = "linux";
   else if (platform == "win32") rtv = "win";
-  if (!rtv) throw new Error(`Unexpected OS ${osPlat}`);
+  if (!rtv) throw new Error(`Unexpected OS ${platform}`);
   return rtv as Platform;
 }
 

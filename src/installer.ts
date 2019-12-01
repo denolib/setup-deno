@@ -1,13 +1,19 @@
 import * as os from "os";
 import * as path from "path";
 
+type Platform = "win" | "linux" | "osx";
+type Arch = "x64";
+
+const platform = getDenoPlatform();
+const arch = getDenoArch();
+
 // On load grab temp directory and cache directory and remove them from env (currently don't want to expose this)
 let tempDirectory: string = process.env["RUNNER_TEMP"] || "";
 let cacheRoot: string = process.env["RUNNER_TOOL_CACHE"] || "";
 // If directories not found, place them in common temp locations
 if (!tempDirectory || !cacheRoot) {
   let baseLocation: string;
-  if (osPlat() == "win") {
+  if (platform == "win") {
     // On windows use the USERPROFILE env variable
     baseLocation = process.env["USERPROFILE"] || "C:\\";
   } else {
@@ -36,20 +42,17 @@ import * as io from "@actions/io";
 import * as uuidV4 from "uuid";
 import * as restm from "typed-rest-client/RestClient";
 
-type Platform = "win" | "linux" | "osx";
-type Arch = "x64";
-
-function osArch(): Arch {
+function getDenoArch(): Arch {
   return "x64";
 }
-function osPlat() {
+function getDenoPlatform(): Platform {
   const platform = os.platform();
   let rtv: Platform | null = null;
   if (platform == "darwin") rtv = "osx";
   else if (platform == "linux") rtv = "linux";
   else if (platform == "win32") rtv = "win";
   if (!rtv) throw new Error(`Unexpected OS ${platform}`);
-  return rtv as Platform;
+  return rtv;
 }
 
 export async function getDeno(version: string) {
@@ -131,8 +134,8 @@ export async function acquireDeno(version: string) {
   } else {
     throw new Error(`Unable to find Deno version ${version}`);
   }
-  const fileName = `deno_${osPlat()}_${osArch()}`;
-  const urlFileName = osPlat() == "win" ? `${fileName}.zip` : `${fileName}.gz`;
+  const fileName = `deno_${platform}_${arch}`;
+  const urlFileName = platform == "win" ? `${fileName}.zip` : `${fileName}.gz`;
   const downloadUrl = `https://github.com/denoland/deno/releases/download/v${version}/${urlFileName}`;
   let downloadPath = await tc.downloadTool(downloadUrl);
 
@@ -140,7 +143,7 @@ export async function acquireDeno(version: string) {
   // Extract
   //
   let extPath = "";
-  if (osPlat() == "win") {
+  if (platform == "win") {
     extPath = await tc.extractZip(downloadPath);
   } else {
     extPath = path.join(downloadPath, "..", uuidV4());

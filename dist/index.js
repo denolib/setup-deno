@@ -1051,271 +1051,35 @@ module.exports = require("os");
 
 /***/ }),
 
-/***/ 105:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const httpm = __webpack_require__(874);
-const util = __webpack_require__(729);
-class RestClient {
-    /**
-     * Creates an instance of the RestClient
-     * @constructor
-     * @param {string} userAgent - userAgent for requests
-     * @param {string} baseUrl - (Optional) If not specified, use full urls per request.  If supplied and a function passes a relative url, it will be appended to this
-     * @param {ifm.IRequestHandler[]} handlers - handlers are typically auth handlers (basic, bearer, ntlm supplied)
-     * @param {ifm.IRequestOptions} requestOptions - options for each http requests (http proxy setting, socket timeout)
-     */
-    constructor(userAgent, baseUrl, handlers, requestOptions) {
-        this.client = new httpm.HttpClient(userAgent, handlers, requestOptions);
-        if (baseUrl) {
-            this._baseUrl = baseUrl;
-        }
-    }
-    /**
-     * Gets a resource from an endpoint
-     * Be aware that not found returns a null.  Other error conditions reject the promise
-     * @param {string} requestUrl - fully qualified or relative url
-     * @param {IRequestOptions} requestOptions - (optional) requestOptions object
-     */
-    options(requestUrl, options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let url = util.getUrl(requestUrl, this._baseUrl);
-            let res = yield this.client.options(url, this._headersFromOptions(options));
-            return this._processResponse(res, options);
-        });
-    }
-    /**
-     * Gets a resource from an endpoint
-     * Be aware that not found returns a null.  Other error conditions reject the promise
-     * @param {string} resource - fully qualified url or relative path
-     * @param {IRequestOptions} requestOptions - (optional) requestOptions object
-     */
-    get(resource, options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let url = util.getUrl(resource, this._baseUrl);
-            let res = yield this.client.get(url, this._headersFromOptions(options));
-            return this._processResponse(res, options);
-        });
-    }
-    /**
-     * Deletes a resource from an endpoint
-     * Be aware that not found returns a null.  Other error conditions reject the promise
-     * @param {string} resource - fully qualified or relative url
-     * @param {IRequestOptions} requestOptions - (optional) requestOptions object
-     */
-    del(resource, options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let url = util.getUrl(resource, this._baseUrl);
-            let res = yield this.client.del(url, this._headersFromOptions(options));
-            return this._processResponse(res, options);
-        });
-    }
-    /**
-     * Creates resource(s) from an endpoint
-     * T type of object returned.
-     * Be aware that not found returns a null.  Other error conditions reject the promise
-     * @param {string} resource - fully qualified or relative url
-     * @param {IRequestOptions} requestOptions - (optional) requestOptions object
-     */
-    create(resource, resources, options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let url = util.getUrl(resource, this._baseUrl);
-            let headers = this._headersFromOptions(options, true);
-            let data = JSON.stringify(resources, null, 2);
-            let res = yield this.client.post(url, data, headers);
-            return this._processResponse(res, options);
-        });
-    }
-    /**
-     * Updates resource(s) from an endpoint
-     * T type of object returned.
-     * Be aware that not found returns a null.  Other error conditions reject the promise
-     * @param {string} resource - fully qualified or relative url
-     * @param {IRequestOptions} requestOptions - (optional) requestOptions object
-     */
-    update(resource, resources, options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let url = util.getUrl(resource, this._baseUrl);
-            let headers = this._headersFromOptions(options, true);
-            let data = JSON.stringify(resources, null, 2);
-            let res = yield this.client.patch(url, data, headers);
-            return this._processResponse(res, options);
-        });
-    }
-    /**
-     * Replaces resource(s) from an endpoint
-     * T type of object returned.
-     * Be aware that not found returns a null.  Other error conditions reject the promise
-     * @param {string} resource - fully qualified or relative url
-     * @param {IRequestOptions} requestOptions - (optional) requestOptions object
-     */
-    replace(resource, resources, options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let url = util.getUrl(resource, this._baseUrl);
-            let headers = this._headersFromOptions(options, true);
-            let data = JSON.stringify(resources, null, 2);
-            let res = yield this.client.put(url, data, headers);
-            return this._processResponse(res, options);
-        });
-    }
-    uploadStream(verb, requestUrl, stream, options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let url = util.getUrl(requestUrl, this._baseUrl);
-            let headers = this._headersFromOptions(options, true);
-            let res = yield this.client.sendStream(verb, url, stream, headers);
-            return this._processResponse(res, options);
-        });
-    }
-    _headersFromOptions(options, contentType) {
-        options = options || {};
-        let headers = options.additionalHeaders || {};
-        headers["Accept"] = options.acceptHeader || "application/json";
-        if (contentType) {
-            let found = false;
-            for (let header in headers) {
-                if (header.toLowerCase() == "content-type") {
-                    found = true;
-                }
-            }
-            if (!found) {
-                headers["Content-Type"] = 'application/json; charset=utf-8';
-            }
-        }
-        return headers;
-    }
-    static dateTimeDeserializer(key, value) {
-        if (typeof value === 'string') {
-            let a = new Date(value);
-            if (!isNaN(a.valueOf())) {
-                return a;
-            }
-        }
-        return value;
-    }
-    _processResponse(res, options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
-                const statusCode = res.message.statusCode;
-                const response = {
-                    statusCode: statusCode,
-                    result: null,
-                    headers: {}
-                };
-                // not found leads to null obj returned
-                if (statusCode == httpm.HttpCodes.NotFound) {
-                    resolve(response);
-                }
-                let obj;
-                let contents;
-                // get the result from the body
-                try {
-                    contents = yield res.readBody();
-                    if (contents && contents.length > 0) {
-                        if (options && options.deserializeDates) {
-                            obj = JSON.parse(contents, RestClient.dateTimeDeserializer);
-                        }
-                        else {
-                            obj = JSON.parse(contents);
-                        }
-                        if (options && options.responseProcessor) {
-                            response.result = options.responseProcessor(obj);
-                        }
-                        else {
-                            response.result = obj;
-                        }
-                    }
-                    response.headers = res.message.headers;
-                }
-                catch (err) {
-                    // Invalid resource (contents not json);  leaving result obj null
-                }
-                // note that 3xx redirects are handled by the http layer.
-                if (statusCode > 299) {
-                    let msg;
-                    // if exception/error in body, attempt to get better error
-                    if (obj && obj.message) {
-                        msg = obj.message;
-                    }
-                    else if (contents && contents.length > 0) {
-                        // it may be the case that the exception is in the body message as string
-                        msg = contents;
-                    }
-                    else {
-                        msg = "Failed request: (" + statusCode + ")";
-                    }
-                    let err = new Error(msg);
-                    // attach statusCode and body obj (if available) to the error object
-                    err['statusCode'] = statusCode;
-                    if (response.result) {
-                        err['result'] = response.result;
-                    }
-                    reject(err);
-                }
-                else {
-                    resolve(response);
-                }
-            }));
-        });
-    }
-}
-exports.RestClient = RestClient;
-
-
-/***/ }),
-
 /***/ 117:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __webpack_require__(470);
 const installer = __webpack_require__(923);
-function run() {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            //
-            // Version is optional.  If supplied, install / use from the tool cache
-            // If not supplied then task is still used to setup proxy, auth, etc...
-            //
-            let version = core.getInput("version");
-            if (!version) {
-                version = core.getInput("deno-version");
-            }
-            if (version) {
-                // TODO: installer doesn't support proxy
-                yield installer.getDeno(version);
-            }
-            else {
-                throw new Error("No version specified.");
-            }
+async function run() {
+    try {
+        //
+        // Version is optional.  If supplied, install / use from the tool cache
+        // If not supplied then task is still used to setup proxy, auth, etc...
+        //
+        let version = core.getInput("version");
+        if (!version) {
+            version = core.getInput("deno-version");
         }
-        catch (error) {
-            core.setFailed(error.message);
+        if (version) {
+            // TODO: installer doesn't support proxy
+            await installer.getDeno(version);
         }
-    });
+        else {
+            throw new Error("No version specified.");
+        }
+    }
+    catch (error) {
+        core.setFailed(error.message);
+    }
 }
 run();
 
@@ -4219,49 +3983,6 @@ module.exports = bytesToUuid;
 
 /***/ }),
 
-/***/ 729:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-Object.defineProperty(exports, "__esModule", { value: true });
-const url = __webpack_require__(835);
-const path = __webpack_require__(622);
-/**
- * creates an url from a request url and optional base url (http://server:8080)
- * @param {string} resource - a fully qualified url or relative path
- * @param {string} baseUrl - an optional baseUrl (http://server:8080)
- * @return {string} - resultant url
- */
-function getUrl(resource, baseUrl) {
-    const pathApi = path.posix || path;
-    if (!baseUrl) {
-        return resource;
-    }
-    else if (!resource) {
-        return baseUrl;
-    }
-    else {
-        const base = url.parse(baseUrl);
-        const resultantUrl = url.parse(resource);
-        // resource (specific per request) elements take priority
-        resultantUrl.protocol = resultantUrl.protocol || base.protocol;
-        resultantUrl.auth = resultantUrl.auth || base.auth;
-        resultantUrl.host = resultantUrl.host || base.host;
-        resultantUrl.pathname = pathApi.resolve(base.pathname, resultantUrl.pathname);
-        if (!resultantUrl.pathname.endsWith('/') && resource.endsWith('/')) {
-            resultantUrl.pathname += '/';
-        }
-        return url.format(resultantUrl);
-    }
-}
-exports.getUrl = getUrl;
-
-
-/***/ }),
-
 /***/ 747:
 /***/ (function(module) {
 
@@ -4795,25 +4516,18 @@ module.exports = uuid;
 
 "use strict";
 
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const os = __webpack_require__(87);
 const path = __webpack_require__(622);
+const platform = getDenoPlatform();
+const arch = getDenoArch();
 // On load grab temp directory and cache directory and remove them from env (currently don't want to expose this)
 let tempDirectory = process.env["RUNNER_TEMP"] || "";
 let cacheRoot = process.env["RUNNER_TOOL_CACHE"] || "";
 // If directories not found, place them in common temp locations
 if (!tempDirectory || !cacheRoot) {
     let baseLocation;
-    if (osPlat() == "win") {
+    if (platform == "win") {
         // On windows use the USERPROFILE env variable
         baseLocation = process.env["USERPROFILE"] || "C:\\";
     }
@@ -4841,11 +4555,11 @@ const tc = __webpack_require__(533);
 const exec = __webpack_require__(986);
 const io = __webpack_require__(1);
 const uuidV4 = __webpack_require__(898);
-const restm = __webpack_require__(105);
-function osArch() {
+const HttpClient_1 = __webpack_require__(874);
+function getDenoArch() {
     return "x64";
 }
-function osPlat() {
+function getDenoPlatform() {
     const platform = os.platform();
     let rtv = null;
     if (platform == "darwin")
@@ -4855,116 +4569,109 @@ function osPlat() {
     else if (platform == "win32")
         rtv = "win";
     if (!rtv)
-        throw new Error(`Unexpected OS ${osPlat}`);
+        throw new Error(`Unexpected OS ${platform}`);
     return rtv;
 }
-function getDeno(version) {
-    return __awaiter(this, void 0, void 0, function* () {
-        let toolPath;
-        walk: {
-            // check cache
-            toolPath = tc.find("deno", version);
-            if (toolPath)
-                break walk;
-            version = yield clearVersion(version);
-            // check cache
-            toolPath = tc.find("deno", version);
-            if (toolPath)
-                break walk;
-            // If not found in cache, download
-            core.debug(`Downloading deno at version ${version}`);
-            toolPath = yield acquireDeno(version);
-        }
-        // prepend the tools path. instructs the agent to prepend for future tasks
-        core.addPath(toolPath);
-    });
+async function getDeno(version) {
+    let toolPath;
+    walk: {
+        // check cache
+        toolPath = tc.find("deno", version);
+        if (toolPath)
+            break walk;
+        version = await clearVersion(version);
+        // check cache
+        toolPath = tc.find("deno", version);
+        if (toolPath)
+            break walk;
+        // If not found in cache, download
+        core.debug(`Downloading deno at version ${version}`);
+        toolPath = await acquireDeno(version);
+    }
+    // prepend the tools path. instructs the agent to prepend for future tasks
+    core.addPath(toolPath);
 }
 exports.getDeno = getDeno;
-function clearVersion(version) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const c = semver.clean(version) || "";
-        if (semver.valid(c)) {
-            version = c;
-        }
-        else {
-            // query deno tags for a matching version
-            version = yield queryLatestMatch(version);
-            if (!version) {
-                throw new Error(`Unable to find Deno version ${version}`);
-            }
-        }
-        return version;
-    });
-}
-exports.clearVersion = clearVersion;
-function queryLatestMatch(versionSpec) {
-    return __awaiter(this, void 0, void 0, function* () {
-        function cmp(a, b) {
-            if (semver.gt(a, b))
-                return 1;
-            return -1;
-        }
-        let version = "";
-        const versions = (yield getAvailableVersions()).sort(cmp);
-        for (let i = versions.length - 1; i >= 0; --i) {
-            if (semver.satisfies(versions[i], versionSpec)) {
-                version = versions[i];
-                break;
-            }
-        }
-        if (version) {
-            core.debug(`matched: ${version}`);
-        }
-        else {
-            core.debug(`match not found`);
-        }
-        return version;
-    });
-}
-function getAvailableVersions() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const rest = new restm.RestClient("setup-deno");
-        const data = (yield rest.get("https://denolib.github.io/setup-deno/release.json")).result || [];
-        return data.map(v => v.name);
-    });
-}
-function acquireDeno(version) {
-    return __awaiter(this, void 0, void 0, function* () {
-        //
-        // Download - a tool installer intimately knows how to get the tool (and construct urls)
-        //
-        const c = semver.clean(version);
-        if (c) {
-            version = c;
-        }
-        else {
+async function clearVersion(version) {
+    const c = semver.clean(version) || "";
+    if (semver.valid(c)) {
+        version = c;
+    }
+    else {
+        // query deno tags for a matching version
+        version = await queryLatestMatch(version);
+        if (!version) {
             throw new Error(`Unable to find Deno version ${version}`);
         }
-        const fileName = `deno_${osPlat()}_${osArch()}`;
-        const urlFileName = osPlat() == "win" ? `${fileName}.zip` : `${fileName}.gz`;
-        const downloadUrl = `https://github.com/denoland/deno/releases/download/v${version}/${urlFileName}`;
-        let downloadPath = yield tc.downloadTool(downloadUrl);
-        //
-        // Extract
-        //
-        let extPath = "";
-        if (osPlat() == "win") {
-            extPath = yield tc.extractZip(downloadPath);
+    }
+    return version;
+}
+exports.clearVersion = clearVersion;
+async function queryLatestMatch(versionSpec) {
+    function cmp(a, b) {
+        if (semver.gt(a, b))
+            return 1;
+        return -1;
+    }
+    let version = "";
+    const versions = (await getAvailableVersions()).sort(cmp);
+    for (let i = versions.length - 1; i >= 0; --i) {
+        if (semver.satisfies(versions[i], versionSpec)) {
+            version = versions[i];
+            break;
         }
-        else {
-            extPath = path.join(downloadPath, "..", uuidV4());
-            const gzFile = path.join(extPath, "deno.gz");
-            yield io.mv(downloadPath, gzFile);
-            const gzPzth = yield io.which("gzip");
-            yield exec.exec(gzPzth, ["-d", gzFile]);
-            fs.chmodSync(path.join(extPath, "deno"), "755");
-        }
-        //
-        // Install into the local tool cache - deno extracts a file that matches the fileName downloaded
-        //
-        const toolPath = yield tc.cacheDir(extPath, "deno", version);
-        return toolPath;
-    });
+    }
+    if (version) {
+        core.debug(`matched: ${version}`);
+    }
+    else {
+        core.debug(`match not found`);
+    }
+    return version;
+}
+async function getAvailableVersions() {
+    // a temporary workaround until a Release API is provided. (#11)
+    const httpc = new HttpClient_1.HttpClient("setup-deno");
+    const body = await (await httpc.get("https://raw.githubusercontent.com/denoland/deno/master/Releases.md")).readBody();
+    const matches = body.matchAll(/### (v\d+\.\d+\.\d+)/g);
+    return [...matches].map(m => m[1]).filter(v => v !== "v0.0.0");
+}
+exports.getAvailableVersions = getAvailableVersions;
+async function acquireDeno(version) {
+    //
+    // Download - a tool installer intimately knows how to get the tool (and construct urls)
+    //
+    const c = semver.clean(version);
+    if (c) {
+        version = c;
+    }
+    else {
+        throw new Error(`Unable to find Deno version ${version}`);
+    }
+    const fileName = `deno_${platform}_${arch}`;
+    const urlFileName = platform == "win" ? `${fileName}.zip` : `${fileName}.gz`;
+    const downloadUrl = `https://github.com/denoland/deno/releases/download/v${version}/${urlFileName}`;
+    let downloadPath = await tc.downloadTool(downloadUrl);
+    //
+    // Extract
+    //
+    let extPath = "";
+    if (platform == "win") {
+        extPath = await tc.extractZip(downloadPath);
+    }
+    else {
+        extPath = path.join(downloadPath, "..", uuidV4());
+        const gzFile = path.join(extPath, "deno.gz");
+        await io.mv(downloadPath, gzFile);
+        const gzPzth = await io.which("gzip");
+        await exec.exec(gzPzth, ["-d", gzFile]);
+        fs.chmodSync(path.join(extPath, "deno"), "755");
+    }
+    //
+    // Install into the local tool cache - deno extracts a file that matches the fileName downloaded
+    //
+    const toolPath = await tc.cacheDir(extPath, "deno", version);
+    return toolPath;
 }
 exports.acquireDeno = acquireDeno;
 

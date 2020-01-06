@@ -1,4 +1,4 @@
-# Deno versions
+# Deno versions (deprecation)
 
 The `setup-deno` action can runs into rate limits when fetching `Deno` versions
 from [Github API](https://api.github.com/repos/denoland/deno/tags). This is why

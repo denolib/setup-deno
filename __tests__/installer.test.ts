@@ -102,6 +102,9 @@ describe("installer tests", () => {
   it("Should be valid versions of deno", async () => {
     const versions = await installer.getAvailableVersions();
 
+    // the number of versions is increasing
+    expect(versions.length).toBeGreaterThanOrEqual(62);
+
     for (const v of versions) {
       expect(semver.valid(v)).not.toBeNull();
     }

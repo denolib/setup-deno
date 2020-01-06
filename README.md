@@ -17,7 +17,7 @@ Basic:
 ```yaml
 steps:
   - uses: actions/checkout@master
-  - uses: denolib/setup-deno@v1.1.0
+  - uses: denolib/setup-deno@master
     with:
       deno-version: 0.x
   - run: deno run https://deno.land/std/examples/welcome.ts
@@ -36,7 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Setup Deno
-        uses: denolib/setup-deno@v1.1.0
+        uses: denolib/setup-deno@master
         with:
           deno-version: ${{ matrix.deno }}
       - run: deno run https://deno.land/std/examples/welcome.ts

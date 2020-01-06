@@ -113,7 +113,7 @@ async function queryLatestMatch(versionSpec: string) {
   return version;
 }
 
-async function getAvailableVersions() {
+export async function getAvailableVersions() {
   // a temporary workaround until a Release API is provided. (#11)
   const httpc = new HttpClient("setup-deno");
   const body = await (
@@ -122,10 +122,8 @@ async function getAvailableVersions() {
     )
   ).readBody();
   const matches = body.matchAll(/### (v\d+\.\d+\.\d+)/g);
-  let releases = [...matches].map(m => m[1]);
 
-  // exclude v0.0.0
-  return releases.slice(0, releases.length - 1);
+  return [...matches].map(m => m[1]).filter(v => v !== "v0.0.0");
 }
 
 export async function acquireDeno(version: string) {

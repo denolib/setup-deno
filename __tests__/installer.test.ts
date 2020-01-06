@@ -26,6 +26,7 @@ const tempDir = path.join(
 
 process.env["RUNNER_TOOL_CACHE"] = toolDir;
 process.env["RUNNER_TEMP"] = tempDir;
+import * as semver from "semver";
 import * as installer from "../src/installer";
 
 const EXTENSION = process.platform == "win32" ? ".exe" : "";
@@ -96,5 +97,13 @@ describe("installer tests", () => {
     await installer.getDeno("252.0.x");
     await installer.getDeno("v252.0");
     await installer.getDeno("252.0");
+  });
+
+  it("Should be valid versions of deno", async () => {
+    const versions = await installer.getAvailableVersions();
+
+    for (const v of versions) {
+      expect(semver.valid(v)).not.toBeNull();
+    }
   });
 });

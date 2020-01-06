@@ -40,7 +40,7 @@ import * as tc from "@actions/tool-cache";
 import * as exec from "@actions/exec";
 import * as io from "@actions/io";
 import * as uuidV4 from "uuid";
-import * as restm from "typed-rest-client/RestClient";
+import { HttpClient } from "typed-rest-client/HttpClient";
 
 function getDenoArch(): Arch {
   return "x64";
@@ -114,14 +114,18 @@ async function queryLatestMatch(versionSpec: string) {
 }
 
 async function getAvailableVersions() {
-  const rest = new restm.RestClient("setup-deno");
-  const data =
-    (
-      await rest.get<{ name: string }[]>(
-        "https://denolib.github.io/setup-deno/release.json"
-      )
-    ).result || [];
-  return data.map(v => v.name);
+  // a temporary workaround until a Release API is provided. (#11)
+  const httpc = new HttpClient("setup-deno");
+  const body = await (
+    await httpc.get(
+      "https://raw.githubusercontent.com/denoland/deno/master/Releases.md"
+    )
+  ).readBody();
+  const matches = body.matchAll(/### (v\d+\.\d+\.\d+)/g);
+  let releases = [...matches].map(m => m[1]);
+
+  // exclude v0.0.0
+  return releases.slice(0, releases.length - 1);
 }
 
 export async function acquireDeno(version: string) {

@@ -12,6 +12,9 @@ This action sets up deno environment for use in actions by:
 
 See [action.yml](action.yml)
 
+> `denolib/setup-deno@v1.1.0` has been deprecated. It may got fail in the future
+> . Use `denolib/setup-deno@master` instead.
+
 Basic:
 
 ```yaml

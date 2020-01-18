@@ -4630,11 +4630,12 @@ async function queryLatestMatch(versionSpec) {
     return version;
 }
 async function getAvailableVersions() {
-    // a temporary workaround until a Release API is provided. (#11)
     const httpc = new HttpClient_1.HttpClient("setup-deno");
-    const body = await (await httpc.get("https://raw.githubusercontent.com/denoland/deno/master/Releases.md")).readBody();
-    const matches = body.matchAll(/### (v\d+\.\d+\.\d+)/g);
-    return [...matches].map(m => m[1]).filter(v => v !== "v0.0.0");
+    const body = JSON.parse(await (await httpc.get("https://api.github.com/repos/denoland/deno/releases?per_page=100" // Will need to paginate when there are more than 100 releases
+    )).readBody());
+    const tags = body.map(x => x.tag_name);
+    core.debug(`Deno versions available: ${tags}`);
+    return tags;
 }
 exports.getAvailableVersions = getAvailableVersions;
 async function acquireDeno(version) {

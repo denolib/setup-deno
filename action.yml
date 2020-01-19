@@ -6,6 +6,11 @@ inputs:
     description: "Version range or exact version of a Deno version to use."
     default: "v0.x"
     required: false
+  token:
+    description: >
+      Auth token used to fetch the Deno versions
+    default: ${{ github.token }}
+    required: false
 runs:
   using: "node12"
   main: "dist/index.js"

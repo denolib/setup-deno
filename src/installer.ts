@@ -40,6 +40,7 @@ import * as tc from "@actions/tool-cache";
 import * as exec from "@actions/exec";
 import * as io from "@actions/io";
 import * as uuidV4 from "uuid";
+import { BearerCredentialHandler } from "typed-rest-client/Handlers";
 import { HttpClient } from "typed-rest-client/HttpClient";
 
 function getDenoArch(): Arch {
@@ -114,7 +115,9 @@ async function queryLatestMatch(versionSpec: string) {
 }
 
 export async function getAvailableVersions() {
-  const httpc = new HttpClient("setup-deno");
+  const token = core.getInput("token") || process.env["GITHUB_TOKEN"];
+  const handlers = token ? [new BearerCredentialHandler(token)] : undefined;
+  const httpc = new HttpClient("setup-deno", handlers);
   const body: any[] = JSON.parse(
     await (
       await httpc.get(

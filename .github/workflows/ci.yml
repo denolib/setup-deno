@@ -23,6 +23,8 @@ jobs:
 
       - name: Test
         run: npm test
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       - name: Set up Deno
         uses: ./

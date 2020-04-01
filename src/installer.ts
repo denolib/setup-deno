@@ -1,11 +1,15 @@
 import * as os from "os";
 import * as path from "path";
 
-type Platform = "win" | "linux" | "osx";
-type Arch = "x64";
+type PlatformOld = "win" | "osx" | "linux";
+type Platform =
+  | "pc-windows-msvc"
+  | "unknown-linux-gnu"
+  | "apple-darwin"
+  | PlatformOld;
 
-const platform = getDenoPlatform();
-const arch = getDenoArch();
+type ArchOld = "x64";
+type Arch = "x86_64" | ArchOld;
 
 // On load grab temp directory and cache directory and remove them from env (currently don't want to expose this)
 let tempDirectory: string = process.env["RUNNER_TEMP"] || "";
@@ -13,7 +17,7 @@ let cacheRoot: string = process.env["RUNNER_TOOL_CACHE"] || "";
 // If directories not found, place them in common temp locations
 if (!tempDirectory || !cacheRoot) {
   let baseLocation: string;
-  if (platform == "win") {
+  if (process.platform === "win32") {
     // On windows use the USERPROFILE env variable
     baseLocation = process.env["USERPROFILE"] || "C:\\";
   } else {
@@ -42,15 +46,19 @@ import * as io from "@actions/io";
 import * as uuidV4 from "uuid";
 import { HttpClient } from "typed-rest-client/HttpClient";
 
-function getDenoArch(): Arch {
-  return "x64";
+function getDenoArch(version: string): Arch {
+  return semver.lte(version, "0.35.0") ? "x64" : "x86_64";
 }
-function getDenoPlatform(): Platform {
+function getDenoPlatform(version: string): Platform {
   const platform = os.platform();
+  const isLessThenV35 = semver.lte(version, "0.35.0");
+
   let rtv: Platform | null = null;
-  if (platform == "darwin") rtv = "osx";
-  else if (platform == "linux") rtv = "linux";
-  else if (platform == "win32") rtv = "win";
+  if (platform === "darwin") rtv = isLessThenV35 ? "osx" : "apple-darwin";
+  else if (platform === "win32")
+    rtv = isLessThenV35 ? "win" : "pc-windows-msvc";
+  else if (platform === "linux")
+    rtv = isLessThenV35 ? "linux" : "unknown-linux-gnu";
   if (!rtv) throw new Error(`Unexpected OS ${platform}`);
   return rtv;
 }
@@ -126,6 +134,44 @@ export async function getAvailableVersions() {
   return [...matches].map(m => m[1]).filter(v => v !== "v0.0.0");
 }
 
+export function getDownloadUrl(version: string): string {
+  // The old release file only keep to Deno v0.35.0
+  const platform = getDenoPlatform(version);
+  const arch = getDenoArch(version);
+  let filename: string;
+  if (semver.lte(version, "0.35.0")) {
+    const extName = process.platform === "win32" ? "zip" : "gz";
+    filename = `deno_${platform}_${arch}.${extName}`;
+  } else {
+    filename = `deno-${arch}-${platform}.zip`;
+  }
+
+  return `https://github.com/denoland/deno/releases/download/v${version}/${filename}`;
+}
+
+export async function extractDenoArchive(
+  version: string,
+  archiveFilepath: string
+): Promise<string> {
+  let extPath = "";
+  if (semver.lte(version, "0.35.0")) {
+    if (process.platform === "win32") {
+      extPath = await tc.extractZip(archiveFilepath);
+    } else {
+      extPath = path.join(archiveFilepath, "..", uuidV4());
+      const gzFile = path.join(extPath, "deno.gz");
+      await io.mv(archiveFilepath, gzFile);
+      const gzPzth = await io.which("gzip");
+      await exec.exec(gzPzth, ["-d", gzFile]);
+      fs.chmodSync(path.join(extPath, "deno"), "755");
+    }
+  } else {
+    extPath = await tc.extractZip(archiveFilepath);
+  }
+
+  return extPath;
+}
+
 export async function acquireDeno(version: string) {
   //
   // Download - a tool installer intimately knows how to get the tool (and construct urls)
@@ -136,25 +182,13 @@ export async function acquireDeno(version: string) {
   } else {
     throw new Error(`Unable to find Deno version ${version}`);
   }
-  const fileName = `deno_${platform}_${arch}`;
-  const urlFileName = platform == "win" ? `${fileName}.zip` : `${fileName}.gz`;
-  const downloadUrl = `https://github.com/denoland/deno/releases/download/v${version}/${urlFileName}`;
-  let downloadPath = await tc.downloadTool(downloadUrl);
+  const downloadUrl = getDownloadUrl(version);
+  const downloadPath = await tc.downloadTool(downloadUrl);
 
   //
   // Extract
   //
-  let extPath = "";
-  if (platform == "win") {
-    extPath = await tc.extractZip(downloadPath);
-  } else {
-    extPath = path.join(downloadPath, "..", uuidV4());
-    const gzFile = path.join(extPath, "deno.gz");
-    await io.mv(downloadPath, gzFile);
-    const gzPzth = await io.which("gzip");
-    await exec.exec(gzPzth, ["-d", gzFile]);
-    fs.chmodSync(path.join(extPath, "deno"), "755");
-  }
+  const extPath = await extractDenoArchive(version, downloadPath);
 
   //
   // Install into the local tool cache - deno extracts a file that matches the fileName downloaded

@@ -4519,15 +4519,13 @@ module.exports = uuid;
 Object.defineProperty(exports, "__esModule", { value: true });
 const os = __webpack_require__(87);
 const path = __webpack_require__(622);
-const platform = getDenoPlatform();
-const arch = getDenoArch();
 // On load grab temp directory and cache directory and remove them from env (currently don't want to expose this)
 let tempDirectory = process.env["RUNNER_TEMP"] || "";
 let cacheRoot = process.env["RUNNER_TOOL_CACHE"] || "";
 // If directories not found, place them in common temp locations
 if (!tempDirectory || !cacheRoot) {
     let baseLocation;
-    if (platform == "win") {
+    if (process.platform === "win32") {
         // On windows use the USERPROFILE env variable
         baseLocation = process.env["USERPROFILE"] || "C:\\";
     }
@@ -4556,18 +4554,19 @@ const exec = __webpack_require__(986);
 const io = __webpack_require__(1);
 const uuidV4 = __webpack_require__(898);
 const HttpClient_1 = __webpack_require__(874);
-function getDenoArch() {
-    return "x64";
+function getDenoArch(version) {
+    return semver.lte(version, "0.35.0") ? "x64" : "x86_64";
 }
-function getDenoPlatform() {
+function getDenoPlatform(version) {
     const platform = os.platform();
+    const isLessThenV35 = semver.lte(version, "0.35.0");
     let rtv = null;
-    if (platform == "darwin")
-        rtv = "osx";
-    else if (platform == "linux")
-        rtv = "linux";
-    else if (platform == "win32")
-        rtv = "win";
+    if (platform === "darwin")
+        rtv = isLessThenV35 ? "osx" : "apple-darwin";
+    else if (platform === "win32")
+        rtv = isLessThenV35 ? "win" : "pc-windows-msvc";
+    else if (platform === "linux")
+        rtv = isLessThenV35 ? "linux" : "unknown-linux-gnu";
     if (!rtv)
         throw new Error(`Unexpected OS ${platform}`);
     return rtv;
@@ -4637,6 +4636,42 @@ async function getAvailableVersions() {
     return [...matches].map(m => m[1]).filter(v => v !== "v0.0.0");
 }
 exports.getAvailableVersions = getAvailableVersions;
+function getDownloadUrl(version) {
+    // The old release file only keep to Deno v0.35.0
+    const platform = getDenoPlatform(version);
+    const arch = getDenoArch(version);
+    let filename;
+    if (semver.lte(version, "0.35.0")) {
+        const extName = process.platform === "win32" ? "zip" : "gz";
+        filename = `deno_${platform}_${arch}.${extName}`;
+    }
+    else {
+        filename = `deno-${arch}-${platform}.zip`;
+    }
+    return `https://github.com/denoland/deno/releases/download/v${version}/${filename}`;
+}
+exports.getDownloadUrl = getDownloadUrl;
+async function extractDenoArchive(version, archiveFilepath) {
+    let extPath = "";
+    if (semver.lte(version, "0.35.0")) {
+        if (process.platform === "win32") {
+            extPath = await tc.extractZip(archiveFilepath);
+        }
+        else {
+            extPath = path.join(archiveFilepath, "..", uuidV4());
+            const gzFile = path.join(extPath, "deno.gz");
+            await io.mv(archiveFilepath, gzFile);
+            const gzPzth = await io.which("gzip");
+            await exec.exec(gzPzth, ["-d", gzFile]);
+            fs.chmodSync(path.join(extPath, "deno"), "755");
+        }
+    }
+    else {
+        extPath = await tc.extractZip(archiveFilepath);
+    }
+    return extPath;
+}
+exports.extractDenoArchive = extractDenoArchive;
 async function acquireDeno(version) {
     //
     // Download - a tool installer intimately knows how to get the tool (and construct urls)
@@ -4648,25 +4683,12 @@ async function acquireDeno(version) {
     else {
         throw new Error(`Unable to find Deno version ${version}`);
     }
-    const fileName = `deno_${platform}_${arch}`;
-    const urlFileName = platform == "win" ? `${fileName}.zip` : `${fileName}.gz`;
-    const downloadUrl = `https://github.com/denoland/deno/releases/download/v${version}/${urlFileName}`;
-    let downloadPath = await tc.downloadTool(downloadUrl);
+    const downloadUrl = getDownloadUrl(version);
+    const downloadPath = await tc.downloadTool(downloadUrl);
     //
     // Extract
     //
-    let extPath = "";
-    if (platform == "win") {
-        extPath = await tc.extractZip(downloadPath);
-    }
-    else {
-        extPath = path.join(downloadPath, "..", uuidV4());
-        const gzFile = path.join(extPath, "deno.gz");
-        await io.mv(downloadPath, gzFile);
-        const gzPzth = await io.which("gzip");
-        await exec.exec(gzPzth, ["-d", gzFile]);
-        fs.chmodSync(path.join(extPath, "deno"), "755");
-    }
+    const extPath = await extractDenoArchive(version, downloadPath);
     //
     // Install into the local tool cache - deno extracts a file that matches the fileName downloaded
     //

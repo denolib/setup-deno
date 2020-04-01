@@ -38,8 +38,8 @@ describe("installer tests", () => {
   }, 100000);
 
   it("Acquires version of deno if no matching version is installed", async () => {
-    await installer.getDeno("0.20.0");
-    const denoDir = path.join(toolDir, "deno", "0.20.0", os.arch());
+    await installer.getDeno("0.38.0");
+    const denoDir = path.join(toolDir, "deno", "0.38.0", os.arch());
     console.log(`${denoDir}.complete`);
     expect(fs.existsSync(`${denoDir}.complete`)).toBe(true);
     expect(fs.existsSync(path.join(denoDir, `deno${EXTENSION}`))).toBe(true);
@@ -56,8 +56,16 @@ describe("installer tests", () => {
   });
 
   it("Acquires version of deno with uncleaned version", async () => {
-    await installer.getDeno("v0.21.0");
-    const denoDir = path.join(toolDir, "deno", "0.21.0", os.arch());
+    await installer.getDeno("v0.38.0");
+    const denoDir = path.join(toolDir, "deno", "0.38.0", os.arch());
+
+    expect(fs.existsSync(`${denoDir}.complete`)).toBe(true);
+    expect(fs.existsSync(path.join(denoDir, `deno${EXTENSION}`))).toBe(true);
+  }, 100000);
+
+  it("Acquires version of deno which less then v0.35.0", async () => {
+    await installer.getDeno("v0.35.0");
+    const denoDir = path.join(toolDir, "deno", "0.35.0", os.arch());
 
     expect(fs.existsSync(`${denoDir}.complete`)).toBe(true);
     expect(fs.existsSync(path.join(denoDir, `deno${EXTENSION}`))).toBe(true);

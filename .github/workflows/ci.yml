@@ -2,11 +2,12 @@ name: ci
 on: [push, pull_request]
 jobs:
   run:
-    name: Run on ${{ matrix.os }}
+    name: Deno v${{ matrix.deno }} in ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
+        deno: ["0.20.0", "0.38.0", "0.x"]
     steps:
       - uses: actions/checkout@master
 
@@ -24,7 +25,7 @@ jobs:
       - name: Test
         run: npm test
 
-      - name: Set up Deno
+      - name: Set up Deno v${{ matrix.deno }}
         uses: ./
 
       - name: Run deno

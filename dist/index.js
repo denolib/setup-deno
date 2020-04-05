@@ -4555,11 +4555,11 @@ const io = __webpack_require__(1);
 const uuidV4 = __webpack_require__(898);
 const HttpClient_1 = __webpack_require__(874);
 function getDenoArch(version) {
-    return semver.lte(version, "0.35.0") ? "x64" : "x86_64";
+    return semver.lte(version, "0.38.0") ? "x64" : "x86_64";
 }
 function getDenoPlatform(version) {
     const platform = os.platform();
-    const isLessThenV35 = semver.lte(version, "0.35.0");
+    const isLessThenV35 = semver.lte(version, "0.38.0");
     let rtv = null;
     if (platform === "darwin")
         rtv = isLessThenV35 ? "osx" : "apple-darwin";
@@ -4637,11 +4637,11 @@ async function getAvailableVersions() {
 }
 exports.getAvailableVersions = getAvailableVersions;
 function getDownloadUrl(version) {
-    // The old release file only keep to Deno v0.35.0
+    // The old release file only keep to Deno v0.38.0
     const platform = getDenoPlatform(version);
     const arch = getDenoArch(version);
     let filename;
-    if (semver.lte(version, "0.35.0")) {
+    if (semver.lte(version, "0.38.0")) {
         const extName = process.platform === "win32" ? "zip" : "gz";
         filename = `deno_${platform}_${arch}.${extName}`;
     }
@@ -4653,7 +4653,7 @@ function getDownloadUrl(version) {
 exports.getDownloadUrl = getDownloadUrl;
 async function extractDenoArchive(version, archiveFilepath) {
     let extPath = "";
-    if (semver.lte(version, "0.35.0")) {
+    if (semver.lte(version, "0.38.0")) {
         if (process.platform === "win32") {
             extPath = await tc.extractZip(archiveFilepath);
         }

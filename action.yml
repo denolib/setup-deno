@@ -4,7 +4,7 @@ author: "The Deno Authors"
 inputs:
   deno-version:
     description: "Version range or exact version of a Deno version to use."
-    default: "v0.x"
+    default: "v1.x"
     required: false
 runs:
   using: "node12"

@@ -22,7 +22,7 @@ steps:
   - uses: actions/checkout@master
   - uses: denolib/setup-deno@master
     with:
-      deno-version: 0.x
+      deno-version: v1.x
   - run: deno run https://deno.land/std/examples/welcome.ts
 ```
 
@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-16.04
     strategy:
       matrix:
-        deno: [0.24.0, 0.23.0]
+        deno: [1.0.0, 0.42.0]
     name: Deno ${{ matrix.deno }} sample
     steps:
       - uses: actions/checkout@master

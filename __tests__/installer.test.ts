@@ -37,6 +37,15 @@ describe("installer tests", () => {
     await io.rmRF(tempDir);
   }, 100000);
 
+  it("Acquires version of deno released after Releases.md format changed", async () => {
+    const version = "1.1.1";
+    await installer.getDeno(version);
+    const denoDir = path.join(toolDir, "deno", version, os.arch());
+
+    expect(fs.existsSync(`${denoDir}.complete`)).toBe(true);
+    expect(fs.existsSync(path.join(denoDir, `deno${EXTENSION}`))).toBe(true);
+  }, 100000);
+
   it("Acquires version of deno if no matching version is installed", async () => {
     await installer.getDeno("0.38.0");
     const denoDir = path.join(toolDir, "deno", "0.38.0", os.arch());

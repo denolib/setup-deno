@@ -129,7 +129,7 @@ export async function getAvailableVersions() {
       "https://raw.githubusercontent.com/denoland/deno/master/Releases.md"
     )
   ).readBody();
-  const matches = body.matchAll(/### (v\d+\.\d+\.\d+)/g);
+  const matches = body.matchAll(/### (v?\d+\.\d+\.\d+)/g);
 
   return [...matches].map(m => m[1]).filter(v => v !== "v0.0.0");
 }

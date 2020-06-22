@@ -70,7 +70,6 @@ export async function getDeno(version: string) {
     toolPath = tc.find("deno", version);
     if (toolPath) break walk;
 
-    version = await clearVersion(version);
     // check cache
     toolPath = tc.find("deno", version);
     if (toolPath) break walk;
@@ -121,7 +120,7 @@ async function queryLatestMatch(versionSpec: string) {
   return version;
 }
 
-export async function getAvailableVersions() {
+export async function getAvailableVersions(): Promise<string[]> {
   // a temporary workaround until a Release API is provided. (#11)
   const httpc = new HttpClient("setup-deno");
   const body = await (
@@ -131,7 +130,7 @@ export async function getAvailableVersions() {
   ).readBody();
   const matches = body.matchAll(/### (v?\d+\.\d+\.\d+)/g);
 
-  return [...matches].map(m => m[1]).filter(v => v !== "v0.0.0");
+  return [...matches].map(m => m[1]).filter(v => v && v !== "v0.0.0");
 }
 
 export function getDownloadUrl(version: string): string {
@@ -182,6 +181,9 @@ export async function acquireDeno(version: string) {
   } else {
     throw new Error(`Unable to find Deno version ${version}`);
   }
+
+  version = await clearVersion(c);
+
   const downloadUrl = getDownloadUrl(version);
   const downloadPath = await tc.downloadTool(downloadUrl);
 

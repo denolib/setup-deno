@@ -127,7 +127,7 @@ describe("installer tests", () => {
     const versions = await installer.getAvailableVersions();
 
     // the number of versions is increasing
-    expect(versions.length).toBeGreaterThanOrEqual(62);
+    expect(versions.length).toBeGreaterThanOrEqual(88);
 
     for (const v of versions) {
       expect(semver.valid(v)).not.toBeNull();

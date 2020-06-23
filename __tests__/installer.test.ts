@@ -16,11 +16,13 @@ import * as installer from "../src/installer";
 
 const EXTENSION = process.platform == "win32" ? ".exe" : "";
 
+async function cleanup() {
+  await io.rmRF(path.join(__dirname, "runner"));
+}
+
 describe("installer tests", () => {
-  beforeAll(async () => {
-    await io.rmRF(toolDir);
-    await io.rmRF(tempDir);
-  }, 100000);
+  beforeAll(cleanup, 2000);
+  afterAll(cleanup, 2000);
 
   it("Acquires version of deno released after Releases.md format changed", async () => {
     const version = "1.1.1";

@@ -129,9 +129,7 @@ export async function getAvailableVersions() {
       "https://raw.githubusercontent.com/denoland/deno/master/Releases.md"
     )
   ).readBody();
-  const matchIterator = body.matchAll(
-    /### v?(([0-9]+\.){2}([0-9]+)(-[0-9a-zA-Z]+)?)/g
-  );
+  const matchIterator = body.matchAll(/### v?((\d+\.){2}(\d+)(-[\d\w]+)?)/g);
   const matches = [...matchIterator];
   // console.log(matches.map(m => m[1]));
   return matches.map(m => m[1]).filter(v => v !== "0.0.0");

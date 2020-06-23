@@ -129,9 +129,12 @@ export async function getAvailableVersions() {
       "https://raw.githubusercontent.com/denoland/deno/master/Releases.md"
     )
   ).readBody();
-  const matches = body.matchAll(/### (v?\d+\.\d+\.\d+)/g);
-
-  return [...matches].map(m => m[1]).filter(v => v !== "v0.0.0");
+  const matchIterator = body.matchAll(
+    /### v?(([0-9]+\.){2}([0-9]+)(-[0-9a-zA-Z]+)?)/g
+  );
+  const matches = [...matchIterator];
+  // console.log(matches.map(m => m[1]));
+  return matches.map(m => m[1]).filter(v => v !== "0.0.0");
 }
 
 export function getDownloadUrl(version: string): string {

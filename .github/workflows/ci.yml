@@ -27,6 +27,8 @@ jobs:
 
       - name: Set up Deno v${{ matrix.deno }}
         uses: ./
+        with:
+          deno-version: ${{ matrix.deno }}
 
       - name: Run deno
         run: |

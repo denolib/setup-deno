@@ -83,6 +83,11 @@ export async function getDeno(version: string) {
   core.addPath(toolPath);
 }
 
+// Get a clear version
+// eg.
+// 1.x -> 1.1.2
+// 1.1.x -> 1.1.2
+// 0.x -> 0.43.0
 export async function clearVersion(version: string) {
   const c = semver.clean(version) || "";
   if (semver.valid(c)) {

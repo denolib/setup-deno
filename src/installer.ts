@@ -135,7 +135,7 @@ export async function getAvailableVersions(): Promise<string[]> {
   ).readBody();
   const matches = body.matchAll(/### (v?\d+\.\d+\.\d+)/g);
 
-  return [...matches].map(m => m[1]).filter(v => v && v !== "v0.0.0");
+  return [...matches].map((m) => m[1]).filter((v) => v && v !== "v0.0.0");
 }
 
 export function getDownloadUrl(version: string): string {
@@ -177,6 +177,7 @@ export async function extractDenoArchive(
 }
 
 export async function acquireDeno(version: string) {
+  core.debug(`acquire Deno '${version}'`);
   //
   // Download - a tool installer intimately knows how to get the tool (and construct urls)
   //
@@ -189,7 +190,12 @@ export async function acquireDeno(version: string) {
 
   version = await clearVersion(c);
 
+  core.debug(`resolve Deno '${version}'`);
+
   const downloadUrl = getDownloadUrl(version);
+
+  core.debug(`download Deno from '${version}'`);
+
   const downloadPath = await tc.downloadTool(downloadUrl);
 
   //

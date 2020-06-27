@@ -4590,6 +4590,11 @@ async function getDeno(version) {
     core.addPath(toolPath);
 }
 exports.getDeno = getDeno;
+// Get a clear version
+// eg.
+// 1.x -> 1.1.2
+// 1.1.x -> 1.1.2
+// 0.x -> 0.43.0
 async function clearVersion(version) {
     const c = semver.clean(version) || "";
     if (semver.valid(c)) {
@@ -4632,7 +4637,7 @@ async function getAvailableVersions() {
     const httpc = new HttpClient_1.HttpClient("setup-deno");
     const body = await (await httpc.get("https://raw.githubusercontent.com/denoland/deno/master/Releases.md")).readBody();
     const matches = body.matchAll(/### (v?\d+\.\d+\.\d+)/g);
-    return [...matches].map(m => m[1]).filter(v => v && v !== "v0.0.0");
+    return [...matches].map((m) => m[1]).filter((v) => v && v !== "v0.0.0");
 }
 exports.getAvailableVersions = getAvailableVersions;
 function getDownloadUrl(version) {
@@ -4672,6 +4677,7 @@ async function extractDenoArchive(version, archiveFilepath) {
 }
 exports.extractDenoArchive = extractDenoArchive;
 async function acquireDeno(version) {
+    core.debug(`acquire Deno '${version}'`);
     //
     // Download - a tool installer intimately knows how to get the tool (and construct urls)
     //
@@ -4683,7 +4689,9 @@ async function acquireDeno(version) {
         throw new Error(`Unable to find Deno version ${version}`);
     }
     version = await clearVersion(c);
+    core.debug(`resolve Deno '${version}'`);
     const downloadUrl = getDownloadUrl(version);
+    core.debug(`download Deno from '${version}'`);
     const downloadPath = await tc.downloadTool(downloadUrl);
     //
     // Extract

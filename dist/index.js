@@ -4638,7 +4638,10 @@ async function getAvailableVersions() {
     const httpc = new HttpClient_1.HttpClient("setup-deno");
     const body = await (await httpc.get("https://raw.githubusercontent.com/denoland/deno/master/Releases.md")).readBody();
     const matches = body.matchAll(/### (v?\d+\.\d+\.\d+)/g);
-    return [...matches].map((m) => m[1]).filter((v) => v && v !== "v0.0.0");
+    return [...matches]
+        .map(m => m[1])
+        .filter(v => v && v !== "v0.0.0")
+        .map(version => (version.startsWith("v") ? version : "v" + version));
 }
 exports.getAvailableVersions = getAvailableVersions;
 function getDownloadUrl(version) {
@@ -4653,6 +4656,7 @@ function getDownloadUrl(version) {
     else {
         filename = `deno-${arch}-${platform}.zip`;
     }
+    version = version.replace(/^v/, "");
     return `https://github.com/denoland/deno/releases/download/v${version}/${filename}`;
 }
 exports.getDownloadUrl = getDownloadUrl;

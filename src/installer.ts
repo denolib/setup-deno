@@ -136,7 +136,10 @@ export async function getAvailableVersions(): Promise<string[]> {
   ).readBody();
   const matches = body.matchAll(/### (v?\d+\.\d+\.\d+)/g);
 
-  return [...matches].map(m => m[1]).filter(v => v && v !== "v0.0.0");
+  return [...matches]
+    .map(m => m[1])
+    .filter(v => v && v !== "v0.0.0")
+    .map(version => (version.startsWith("v") ? version : "v" + version));
 }
 
 export function getDownloadUrl(version: string): string {
@@ -150,6 +153,8 @@ export function getDownloadUrl(version: string): string {
   } else {
     filename = `deno-${arch}-${platform}.zip`;
   }
+
+  version = version.replace(/^v/, "");
 
   return `https://github.com/denoland/deno/releases/download/v${version}/${filename}`;
 }

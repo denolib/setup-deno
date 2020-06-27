@@ -70,7 +70,6 @@ export async function getDeno(version: string) {
     toolPath = tc.find("deno", version);
     if (toolPath) break walk;
 
-    version = await clearVersion(version);
     // check cache
     toolPath = tc.find("deno", version);
     if (toolPath) break walk;
@@ -84,6 +83,11 @@ export async function getDeno(version: string) {
   core.addPath(toolPath);
 }
 
+// Get a clear version
+// eg.
+// 1.x -> 1.1.2
+// 1.1.x -> 1.1.2
+// 0.x -> 0.43.0
 export async function clearVersion(version: string) {
   const c = semver.clean(version) || "";
   if (semver.valid(c)) {
@@ -105,6 +109,7 @@ async function queryLatestMatch(versionSpec: string) {
   }
   let version = "";
   const versions = (await getAvailableVersions()).sort(cmp);
+  core.debug(`found Deno versions '${JSON.stringify(versions, null, 2)}'`);
   for (let i = versions.length - 1; i >= 0; --i) {
     if (semver.satisfies(versions[i], versionSpec)) {
       version = versions[i];
@@ -121,7 +126,7 @@ async function queryLatestMatch(versionSpec: string) {
   return version;
 }
 
-export async function getAvailableVersions() {
+export async function getAvailableVersions(): Promise<string[]> {
   // a temporary workaround until a Release API is provided. (#11)
   const httpc = new HttpClient("setup-deno");
   const body = await (
@@ -129,10 +134,12 @@ export async function getAvailableVersions() {
       "https://raw.githubusercontent.com/denoland/deno/master/Releases.md"
     )
   ).readBody();
-  const matchIterator = body.matchAll(/### v?((\d+\.){2}(\d+)(-[\d\w]+)?)/g);
-  const matches = [...matchIterator];
-  // console.log(matches.map(m => m[1]));
-  return matches.map(m => m[1]).filter(v => v !== "0.0.0");
+  const matches = body.matchAll(/### (v?\d+\.\d+\.\d+)/g);
+
+  return [...matches]
+    .map(m => m[1])
+    .filter(v => v && v !== "v0.0.0")
+    .map(version => (version.startsWith("v") ? version : "v" + version));
 }
 
 export function getDownloadUrl(version: string): string {
@@ -146,6 +153,8 @@ export function getDownloadUrl(version: string): string {
   } else {
     filename = `deno-${arch}-${platform}.zip`;
   }
+
+  version = version.replace(/^v/, "");
 
   return `https://github.com/denoland/deno/releases/download/v${version}/${filename}`;
 }
@@ -174,16 +183,19 @@ export async function extractDenoArchive(
 }
 
 export async function acquireDeno(version: string) {
+  core.debug(`acquire Deno '${version}'`);
   //
   // Download - a tool installer intimately knows how to get the tool (and construct urls)
   //
-  const c = semver.clean(version);
-  if (c) {
-    version = c;
-  } else {
-    throw new Error(`Unable to find Deno version ${version}`);
-  }
+
+  version = await clearVersion(version);
+
+  core.debug(`resolve Deno '${version}'`);
+
   const downloadUrl = getDownloadUrl(version);
+
+  core.debug(`download Deno from '${downloadUrl}'`);
+
   const downloadPath = await tc.downloadTool(downloadUrl);
 
   //

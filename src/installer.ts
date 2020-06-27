@@ -109,6 +109,7 @@ async function queryLatestMatch(versionSpec: string) {
   }
   let version = "";
   const versions = (await getAvailableVersions()).sort(cmp);
+  core.debug(`found Deno versions '${JSON.stringify(versions, null, 2)}'`);
   for (let i = versions.length - 1; i >= 0; --i) {
     if (semver.satisfies(versions[i], versionSpec)) {
       version = versions[i];
@@ -181,14 +182,8 @@ export async function acquireDeno(version: string) {
   //
   // Download - a tool installer intimately knows how to get the tool (and construct urls)
   //
-  const c = semver.clean(version);
-  if (c) {
-    version = c;
-  } else {
-    throw new Error(`Unable to find Deno version ${version}`);
-  }
 
-  version = await clearVersion(c);
+  version = await clearVersion(version);
 
   core.debug(`resolve Deno '${version}'`);
 

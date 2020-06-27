@@ -3,26 +3,11 @@ import * as path from "path";
 import * as fs from "fs";
 import * as os from "os";
 
-const toolDir = path.join(
-  __dirname,
-  "runner",
-  path.join(
-    Math.random()
-      .toString(36)
-      .substring(7)
-  ),
-  "tools"
-);
-const tempDir = path.join(
-  __dirname,
-  "runner",
-  path.join(
-    Math.random()
-      .toString(36)
-      .substring(7)
-  ),
-  "temp"
-);
+const randomStr = Math.random()
+  .toString(36)
+  .substring(7);
+const toolDir = path.join(__dirname, "runner", randomStr, "tools");
+const tempDir = path.join(__dirname, "runner", randomStr, "temp");
 
 process.env["RUNNER_TOOL_CACHE"] = toolDir;
 process.env["RUNNER_TEMP"] = tempDir;
@@ -31,11 +16,13 @@ import * as installer from "../src/installer";
 
 const EXTENSION = process.platform == "win32" ? ".exe" : "";
 
+async function cleanup() {
+  await io.rmRF(path.join(__dirname, "runner"));
+}
+
 describe("installer tests", () => {
-  beforeAll(async () => {
-    await io.rmRF(toolDir);
-    await io.rmRF(tempDir);
-  }, 100000);
+  beforeAll(cleanup, 2000);
+  afterAll(cleanup, 2000);
 
   it("Acquires version of deno released after Releases.md format changed", async () => {
     const version = "1.1.1";
@@ -127,7 +114,7 @@ describe("installer tests", () => {
     const versions = await installer.getAvailableVersions();
 
     // the number of versions is increasing
-    expect(versions.length).toBeGreaterThanOrEqual(62);
+    expect(versions.length).toBeGreaterThanOrEqual(88);
 
     for (const v of versions) {
       expect(semver.valid(v)).not.toBeNull();

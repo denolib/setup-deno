@@ -4689,7 +4689,7 @@ async function acquireDeno(version) {
     version = await clearVersion(version);
     core.debug(`resolve Deno '${version}'`);
     const downloadUrl = getDownloadUrl(version);
-    core.debug(`download Deno from '${version}'`);
+    core.debug(`download Deno from '${downloadUrl}'`);
     const downloadPath = await tc.downloadTool(downloadUrl);
     //
     // Extract

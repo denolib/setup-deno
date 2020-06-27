@@ -194,7 +194,7 @@ export async function acquireDeno(version: string) {
 
   const downloadUrl = getDownloadUrl(version);
 
-  core.debug(`download Deno from '${version}'`);
+  core.debug(`download Deno from '${downloadUrl}'`);
 
   const downloadPath = await tc.downloadTool(downloadUrl);
 

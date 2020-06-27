@@ -16,8 +16,8 @@ Basic:
 
 ```yaml
 steps:
-  - uses: actions/checkout@master
-  - uses: denolib/setup-deno@master
+  - uses: actions/checkout@v2
+  - uses: denolib/setup-deno@v2
     with:
       deno-version: v1.x
   - run: deno run https://deno.land/std/examples/welcome.ts
@@ -31,12 +31,12 @@ jobs:
     runs-on: ubuntu-16.04
     strategy:
       matrix:
-        deno: [1.0.0, 0.42.0]
+        deno: ["v1.0.0", "v0.42.0", "v1.x", "v0.x"]
     name: Deno ${{ matrix.deno }} sample
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
       - name: Setup Deno
-        uses: denolib/setup-deno@master
+        uses: denolib/setup-deno@v2
         with:
           deno-version: ${{ matrix.deno }}
       - run: deno run https://deno.land/std/examples/welcome.ts

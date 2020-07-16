@@ -4555,11 +4555,15 @@ const io = __webpack_require__(1);
 const uuidV4 = __webpack_require__(898);
 const HttpClient_1 = __webpack_require__(874);
 function getDenoArch(version) {
-    return semver.lte(version, "0.38.0") ? "x64" : "x86_64";
+    return version === "nightly"
+        ? "x86_64"
+        : semver.lte(version, "0.38.0")
+            ? "x64"
+            : "x86_64";
 }
 function getDenoPlatform(version) {
     const platform = os.platform();
-    const isLessThenV35 = semver.lte(version, "0.38.0");
+    const isLessThenV35 = version === "nightly" ? false : semver.lte(version, "0.38.0");
     let rtv = null;
     if (platform === "darwin")
         rtv = isLessThenV35 ? "osx" : "apple-darwin";
@@ -4595,7 +4599,11 @@ exports.getDeno = getDeno;
 // 1.x -> 1.1.2
 // 1.1.x -> 1.1.2
 // 0.x -> 0.43.0
+// nightly -> nightly
 async function clearVersion(version) {
+    if (version === "nightly") {
+        return version;
+    }
     const c = semver.clean(version) || "";
     if (semver.valid(c)) {
         version = c;
@@ -4611,6 +4619,9 @@ async function clearVersion(version) {
 }
 exports.clearVersion = clearVersion;
 async function queryLatestMatch(versionSpec) {
+    if (versionSpec === "nightly") {
+        return versionSpec;
+    }
     function cmp(a, b) {
         if (semver.gt(a, b))
             return 1;
@@ -4649,7 +4660,11 @@ function getDownloadUrl(version) {
     const platform = getDenoPlatform(version);
     const arch = getDenoArch(version);
     let filename;
-    if (semver.lte(version, "0.38.0")) {
+    if (version === "nightly") {
+        filename = `deno-nightly-${arch}-${platform}.zip`;
+        return `https://github.com/maximousblk/deno_nightly/releases/download/latest/${filename}`;
+    }
+    else if (semver.lte(version, "0.38.0")) {
         const extName = process.platform === "win32" ? "zip" : "gz";
         filename = `deno_${platform}_${arch}.${extName}`;
     }
@@ -4662,7 +4677,10 @@ function getDownloadUrl(version) {
 exports.getDownloadUrl = getDownloadUrl;
 async function extractDenoArchive(version, archiveFilepath) {
     let extPath = "";
-    if (semver.lte(version, "0.38.0")) {
+    if (version === "nightly") {
+        extPath = await tc.extractZip(archiveFilepath);
+    }
+    else if (semver.lte(version, "0.38.0")) {
         if (process.platform === "win32") {
             extPath = await tc.extractZip(archiveFilepath);
         }
@@ -4695,6 +4713,7 @@ async function acquireDeno(version) {
     // Extract
     //
     const extPath = await extractDenoArchive(version, downloadPath);
+    core.debug(`deno file path '${extPath}'`);
     //
     // Install into the local tool cache - deno extracts a file that matches the fileName downloaded
     //

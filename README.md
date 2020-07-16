@@ -20,7 +20,9 @@ steps:
   - uses: denolib/setup-deno@v2
     with:
       deno-version: v1.x
-  - run: deno run https://deno.land/std/examples/welcome.ts
+  - run: |
+    deno --version
+    deno run https://deno.land/std/examples/welcome.ts
 ```
 
 Matrix Testing:
@@ -39,7 +41,22 @@ jobs:
         uses: denolib/setup-deno@v2
         with:
           deno-version: ${{ matrix.deno }}
-      - run: deno run https://deno.land/std/examples/welcome.ts
+      - run: |
+        deno --version
+        deno run https://deno.land/std/examples/welcome.ts
+```
+
+Nightly Testing:
+
+```yaml
+steps:
+  - uses: actions/checkout@v2
+  - uses: denolib/setup-deno@v2
+    with:
+      deno-version: nightly
+  - run: |
+    deno-nightly --version
+    deno-nightly run https://deno.land/std/examples/welcome.ts
 ```
 
 # License

@@ -10,6 +10,7 @@ type Platform =
 
 type ArchOld = "x64";
 type Arch = "x86_64" | ArchOld;
+type Version = string | "nightly";
 
 // On load grab temp directory and cache directory and remove them from env (currently don't want to expose this)
 let tempDirectory: string = process.env["RUNNER_TEMP"] || "";
@@ -46,12 +47,17 @@ import * as io from "@actions/io";
 import * as uuidV4 from "uuid";
 import { HttpClient } from "typed-rest-client/HttpClient";
 
-function getDenoArch(version: string): Arch {
-  return semver.lte(version, "0.38.0") ? "x64" : "x86_64";
+function getDenoArch(version: Version): Arch {
+  return version === "nightly"
+    ? "x86_64"
+    : semver.lte(version, "0.38.0")
+    ? "x64"
+    : "x86_64";
 }
-function getDenoPlatform(version: string): Platform {
+function getDenoPlatform(version: Version): Platform {
   const platform = os.platform();
-  const isLessThenV35 = semver.lte(version, "0.38.0");
+  const isLessThenV35 =
+    version === "nightly" ? false : semver.lte(version, "0.38.0");
 
   let rtv: Platform | null = null;
   if (platform === "darwin") rtv = isLessThenV35 ? "osx" : "apple-darwin";
@@ -63,7 +69,7 @@ function getDenoPlatform(version: string): Platform {
   return rtv;
 }
 
-export async function getDeno(version: string) {
+export async function getDeno(version: Version) {
   let toolPath: string;
   walk: {
     // check cache
@@ -88,7 +94,11 @@ export async function getDeno(version: string) {
 // 1.x -> 1.1.2
 // 1.1.x -> 1.1.2
 // 0.x -> 0.43.0
-export async function clearVersion(version: string) {
+// nightly -> nightly
+export async function clearVersion(version: Version) {
+  if (version === "nightly") {
+    return version;
+  }
   const c = semver.clean(version) || "";
   if (semver.valid(c)) {
     version = c;
@@ -102,7 +112,10 @@ export async function clearVersion(version: string) {
   return version;
 }
 
-async function queryLatestMatch(versionSpec: string) {
+async function queryLatestMatch(versionSpec: Version): Promise<string> {
+  if (versionSpec === "nightly") {
+    return versionSpec;
+  }
   function cmp(a: string, b: string) {
     if (semver.gt(a, b)) return 1;
     return -1;
@@ -142,12 +155,15 @@ export async function getAvailableVersions(): Promise<string[]> {
     .map(version => (version.startsWith("v") ? version : "v" + version));
 }
 
-export function getDownloadUrl(version: string): string {
+export function getDownloadUrl(version: Version): string {
   // The old release file only keep to Deno v0.38.0
   const platform = getDenoPlatform(version);
   const arch = getDenoArch(version);
   let filename: string;
-  if (semver.lte(version, "0.38.0")) {
+  if (version === "nightly") {
+    filename = `deno-nightly-${arch}-${platform}.zip`;
+    return `https://github.com/maximousblk/deno_nightly/releases/download/latest/${filename}`;
+  } else if (semver.lte(version, "0.38.0")) {
     const extName = process.platform === "win32" ? "zip" : "gz";
     filename = `deno_${platform}_${arch}.${extName}`;
   } else {
@@ -160,11 +176,14 @@ export function getDownloadUrl(version: string): string {
 }
 
 export async function extractDenoArchive(
-  version: string,
+  version: Version,
   archiveFilepath: string
 ): Promise<string> {
   let extPath = "";
-  if (semver.lte(version, "0.38.0")) {
+
+  if (version === "nightly") {
+    extPath = await tc.extractZip(archiveFilepath);
+  } else if (semver.lte(version, "0.38.0")) {
     if (process.platform === "win32") {
       extPath = await tc.extractZip(archiveFilepath);
     } else {
@@ -202,6 +221,8 @@ export async function acquireDeno(version: string) {
   // Extract
   //
   const extPath = await extractDenoArchive(version, downloadPath);
+
+  core.debug(`deno file path '${extPath}'`);
 
   //
   // Install into the local tool cache - deno extracts a file that matches the fileName downloaded

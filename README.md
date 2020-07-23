@@ -21,8 +21,8 @@ steps:
     with:
       deno-version: v1.x
   - run: |
-    deno --version
-    deno run https://deno.land/std/examples/welcome.ts
+      deno --version
+      deno run https://deno.land/std/examples/welcome.ts
 ```
 
 Matrix Testing:
@@ -42,8 +42,8 @@ jobs:
         with:
           deno-version: ${{ matrix.deno }}
       - run: |
-        deno --version
-        deno run https://deno.land/std/examples/welcome.ts
+          deno --version
+          deno run https://deno.land/std/examples/welcome.ts
 ```
 
 Nightly Testing:
@@ -55,8 +55,8 @@ steps:
     with:
       deno-version: nightly
   - run: |
-    deno-nightly --version
-    deno-nightly run https://deno.land/std/examples/welcome.ts
+      deno-nightly --version
+      deno-nightly run https://deno.land/std/examples/welcome.ts
 ```
 
 # License

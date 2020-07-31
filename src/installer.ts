@@ -45,7 +45,7 @@ import * as tc from "@actions/tool-cache";
 import * as exec from "@actions/exec";
 import * as io from "@actions/io";
 import * as uuidV4 from "uuid";
-import { HttpClient } from "typed-rest-client/HttpClient";
+import { HttpClient } from "@actions/http-client";
 
 function getDenoArch(version: Version): Arch {
   return version === "nightly"
@@ -150,9 +150,9 @@ export async function getAvailableVersions(): Promise<string[]> {
   const matches = body.matchAll(/### (v?\d+\.\d+\.\d+)/g);
 
   return [...matches]
-    .map(m => m[1])
-    .filter(v => v && v !== "v0.0.0")
-    .map(version => (version.startsWith("v") ? version : "v" + version));
+    .map((m) => m[1])
+    .filter((v) => v && v !== "v0.0.0")
+    .map((version) => (version.startsWith("v") ? version : "v" + version));
 }
 
 export function getDownloadUrl(version: Version): string {

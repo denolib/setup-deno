@@ -3,9 +3,7 @@ import * as path from "path";
 import * as fs from "fs";
 import * as os from "os";
 
-const randomStr = Math.random()
-  .toString(36)
-  .substring(7);
+const randomStr = Math.random().toString(36).substring(7);
 const toolDir = path.join(__dirname, "runner", randomStr, "tools");
 const tempDir = path.join(__dirname, "runner", randomStr, "temp");
 

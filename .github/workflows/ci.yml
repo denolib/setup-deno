@@ -20,6 +20,7 @@ jobs:
         run: npm install
 
       - name: Lint
+        if: matrix.os != 'windows-latest'
         run: npm run format-check
 
       - name: Test
@@ -54,6 +55,7 @@ jobs:
         run: npm install
 
       - name: Lint
+        if: matrix.os != 'windows-latest'
         run: npm run format-check
 
       - name: Test

@@ -5,10 +5,11 @@
   "description": "setup deno action",
   "main": "src/setup-deno.ts",
   "scripts": {
-    "build": "tsc",
-    "format": "prettier --write **/*.ts",
-    "format-check": "prettier --check **/*.ts",
-    "release": "ncc build && git add -f dist/",
+    "build": "ncc build",
+    "check": "run-p format-check lint test",
+    "format": "run-s \"format-check -- --write\"",
+    "format-check": "prettier --check **/*.{md,json,js,ts}",
+    "lint": "eslint --ext ts src/ __tests__",
     "test": "jest"
   },
   "repository": {
@@ -36,10 +37,15 @@
     "@types/node": "^12.12.12",
     "@types/semver": "^6.2.0",
     "@types/uuid": "^3.4.6",
+    "@typescript-eslint/eslint-plugin": "^3.7.1",
+    "@typescript-eslint/parser": "^3.7.1",
     "@zeit/ncc": "^0.22.3",
+    "eslint": "^7.6.0",
+    "eslint-config-prettier": "^6.11.0",
     "husky": "^4.2.5",
     "jest": "^26.2.1",
     "jest-circus": "^26.2.1",
+    "npm-run-all": "^4.1.5",
     "prettier": "^2.0.5",
     "ts-jest": "^26.1.4",
     "typescript": "^3.9.7"
@@ -47,7 +53,7 @@
   "husky": {
     "skipCI": true,
     "hooks": {
-      "pre-commit": "npm run build && npm run format"
+      "pre-commit": "run-s build; git add dist/index.js"
     }
   }
 }

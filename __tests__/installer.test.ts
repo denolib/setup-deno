@@ -14,7 +14,7 @@ import * as installer from "../src/installer";
 
 const EXTENSION = process.platform == "win32" ? ".exe" : "";
 
-async function cleanup() {
+async function cleanup(): Promise<void> {
   await io.rmRF(path.join(__dirname, "runner"));
 }
 

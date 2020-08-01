@@ -69,7 +69,7 @@ function getDenoPlatform(version: Version): Platform {
   return rtv;
 }
 
-export async function getDeno(version: Version) {
+export async function getDeno(version: Version): Promise<void> {
   let toolPath: string;
   walk: {
     // check cache
@@ -95,7 +95,7 @@ export async function getDeno(version: Version) {
 // 1.1.x -> 1.1.2
 // 0.x -> 0.43.0
 // nightly -> nightly
-export async function clearVersion(version: Version) {
+export async function clearVersion(version: Version): Promise<string> {
   if (version === "nightly") {
     return version;
   }
@@ -116,7 +116,7 @@ async function queryLatestMatch(versionSpec: Version): Promise<string> {
   if (versionSpec === "nightly") {
     return versionSpec;
   }
-  function cmp(a: string, b: string) {
+  function cmp(a: string, b: string): 1 | -1 {
     if (semver.gt(a, b)) return 1;
     return -1;
   }
@@ -201,7 +201,7 @@ export async function extractDenoArchive(
   return extPath;
 }
 
-export async function acquireDeno(version: string) {
+export async function acquireDeno(version: string): Promise<string> {
   core.debug(`acquire Deno '${version}'`);
   //
   // Download - a tool installer intimately knows how to get the tool (and construct urls)

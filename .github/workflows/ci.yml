@@ -19,12 +19,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Lint
-        if: matrix.os != 'windows-latest'
-        run: npm run format-check
-
-      - name: Test
-        run: npm test
+      - name: Check
+        run: npm run check
 
       - name: Set up Deno ${{ matrix.deno }}
         uses: ./
@@ -54,12 +50,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Lint
-        if: matrix.os != 'windows-latest'
-        run: npm run format-check
-
-      - name: Test
-        run: npm test
+      - name: Check
+        run: npm run check
 
       - name: Set up Deno ${{ matrix.deno }}
         uses: ./

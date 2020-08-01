@@ -21,8 +21,8 @@ npm i
 npm run build
 ```
 
-During the commit step, Husky will take care of bundling all files with
-[NCC](https://github.com/zeit/ncc).
+During the commit step, Husky will take care of checking all files with
+[Prettier](https://prettier.io) and [ESLint](https://eslint.org).
 
 ### Testing
 

@@ -53,7 +53,7 @@
   "husky": {
     "skipCI": true,
     "hooks": {
-      "pre-commit": "run-s build; git add dist/index.js"
+      "pre-commit": "run-p format-check lint"
     }
   }
 }

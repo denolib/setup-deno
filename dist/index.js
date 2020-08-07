@@ -5179,8 +5179,14 @@ async function acquireDeno(version) {
     //
     // Extract
     //
-    const extPath = await extractDenoArchive(version, downloadPath);
+    let extPath = await extractDenoArchive(version, downloadPath);
     core.debug(`deno file path '${extPath}'`);
+    if (version === "nightly") {
+        const newPath = path.join(path.dirname(extPath), "deno");
+        core.debug(`move deno file from '${extPath}' to '${newPath}'`);
+        fs.renameSync(extPath, newPath);
+        extPath = newPath;
+    }
     //
     // Install into the local tool cache - deno extracts a file that matches the fileName downloaded
     //

@@ -5,12 +5,14 @@
   "description": "setup deno action",
   "main": "src/setup-deno.ts",
   "scripts": {
-    "build": "ncc build",
+    "build": "ncc build -o dist",
+    "build-checksum": "ncc build -o _dist",
     "check": "run-p format-check lint test",
     "format": "run-s \"format-check -- --write\"",
     "format-check": "prettier --check **/*.{md,json,js,ts}",
     "lint": "eslint --ext ts src/ __tests__",
-    "test": "jest"
+    "test": "jest",
+    "checksum": "npm run build-checksum && node ./scripts/checksum.js"
   },
   "repository": {
     "type": "git",

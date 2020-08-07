@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-16.04
     strategy:
       matrix:
-        deno: ["v1.0.0", "v0.42.0", "v1.x", "v0.x"]
+        deno: ["v1.0.0", "v0.42.0", "v1.x", "v0.x", 'nightly']
     name: Deno ${{ matrix.deno }} sample
     steps:
       - uses: actions/checkout@v2
@@ -44,19 +44,6 @@ jobs:
       - run: |
           deno --version
           deno run https://deno.land/std/examples/welcome.ts
-```
-
-Nightly Testing:
-
-```yaml
-steps:
-  - uses: actions/checkout@v2
-  - uses: denolib/setup-deno@v2
-    with:
-      deno-version: nightly
-  - run: |
-      deno-nightly --version
-      deno-nightly run https://deno.land/std/examples/welcome.ts
 ```
 
 # License

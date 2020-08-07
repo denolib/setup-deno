@@ -7,7 +7,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
-        deno: ["v0.20.0", "v0.38.0", "v0.x", "v1.x"]
+        deno: ["v0.20.0", "v0.38.0", "v0.x", "v1.x", "nightly"]
     steps:
       - uses: actions/checkout@v2
 
@@ -31,34 +31,3 @@ jobs:
         run: |
           deno --version
           deno run https://deno.land/std/examples/welcome.ts
-
-  nightly:
-    name: Deno ${{ matrix.deno }} in ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
-        deno: ["nightly"]
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Node.js 12.x
-        uses: actions/setup-node@v1
-        with:
-          node-version: 12.x
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Check
-        run: npm run check
-
-      - name: Set up Deno ${{ matrix.deno }}
-        uses: ./
-        with:
-          deno-version: ${{ matrix.deno }}
-
-      - name: Run deno
-        run: |
-          deno-nightly --version
-          deno-nightly run https://deno.land/std/examples/welcome.ts

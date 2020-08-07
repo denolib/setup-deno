@@ -17,8 +17,9 @@ async function run(): Promise<void> {
     } else {
       throw new Error("No version specified.");
     }
-  } catch (error) {
-    core.setFailed(error.message);
+  } catch (e) {
+    const err = e as Error;
+    core.setFailed(err.stack || err.message);
   }
 }
 

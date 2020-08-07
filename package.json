@@ -7,12 +7,13 @@
   "scripts": {
     "build": "ncc build -o dist",
     "build-checksum": "ncc build -o _dist",
-    "check": "run-p format-check lint test",
+    "check": "run-p format-check lint test check-lock",
     "format": "run-s \"format-check -- --write\"",
     "format-check": "prettier --check **/*.{md,json,js,ts}",
     "lint": "eslint --ext ts src/ __tests__",
     "test": "jest",
-    "checksum": "npm run build-checksum && node ./scripts/checksum.js"
+    "checksum": "npm run build-checksum && node ./scripts/checksum.js",
+    "check-lock": "npx lockfile-lint --path package-lock.json --allowed-hosts npm yarn --validate-https"
   },
   "repository": {
     "type": "git",

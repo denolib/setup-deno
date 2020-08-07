@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-16.04
     strategy:
       matrix:
-        deno: ["v1.0.0", "v0.42.0", "v1.x", "v0.x", 'nightly']
+        deno: ["v1.0.0", "v0.42.0", "v1.x", "v0.x", "nightly"]
     name: Deno ${{ matrix.deno }} sample
     steps:
       - uses: actions/checkout@v2

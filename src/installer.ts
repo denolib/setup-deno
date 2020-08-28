@@ -1,16 +1,7 @@
+import type { Version, Arch, Platform } from "./types";
+
 import * as os from "os";
 import * as path from "path";
-
-type PlatformOld = "win" | "osx" | "linux";
-type Platform =
-  | "pc-windows-msvc"
-  | "unknown-linux-gnu"
-  | "apple-darwin"
-  | PlatformOld;
-
-type ArchOld = "x64";
-type Arch = "x86_64" | ArchOld;
-type Version = string | "nightly";
 
 // On load grab temp directory and cache directory and remove them from env (currently don't want to expose this)
 let tempDirectory: string = process.env["RUNNER_TEMP"] || "";
@@ -54,6 +45,7 @@ function getDenoArch(version: Version): Arch {
     ? "x64"
     : "x86_64";
 }
+
 function getDenoPlatform(version: Version): Platform {
   const platform = os.platform();
   const isLessThenV35 =
@@ -70,16 +62,11 @@ function getDenoPlatform(version: Version): Platform {
 }
 
 export async function getDeno(version: Version): Promise<void> {
-  let toolPath: string;
-  walk: {
-    // check cache
-    toolPath = tc.find("deno", version);
-    if (toolPath) break walk;
+  let toolPath = tc.find("deno", version);
 
-    // check cache
-    toolPath = tc.find("deno", version);
-    if (toolPath) break walk;
-
+  if (toolPath) {
+    core.debug(`Found in cache @ ${toolPath}`);
+  } else {
     // If not found in cache, download
     core.debug(`Downloading deno at version ${version}`);
     toolPath = await acquireDeno(version);

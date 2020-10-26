@@ -23,6 +23,8 @@ steps:
   - run: |
       deno --version
       deno run https://deno.land/std/examples/welcome.ts
+      deno install --allow-read -n deno_cat https://deno.land/std/examples/cat.ts
+      deno_cat ./README.md
 ```
 
 Matrix Testing:

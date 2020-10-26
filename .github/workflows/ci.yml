@@ -43,3 +43,10 @@ jobs:
         run: |
           deno --version
           deno run https://deno.land/std/examples/welcome.ts
+
+      - name: Run deno installed cli
+        if: matrix.deno == 'v1.x' || matrix.deno == 'nightly'
+        run: |
+          deno install --allow-read -n deno_cat https://deno.land/std/examples/cat.ts
+          deno_cat ./README.md
+

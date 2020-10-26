@@ -18,7 +18,7 @@ function hash(str) {
 }
 
 const hash1 = hash(str1);
-const hash2 = hash(str1);
+const hash2 = hash(str2);
 
 process.stdout.write(`checksum: ${hash1} === ${hash2}\n`);
 

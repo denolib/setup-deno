@@ -74,6 +74,10 @@ export async function getDeno(version: Version): Promise<void> {
 
   // prepend the tools path. instructs the agent to prepend for future tasks
   core.addPath(toolPath);
+  // set `deno install` root
+  core.addPath(
+    process.env.DENO_INSTALL_ROOT || path.join(os.homedir(), ".deno", "bin")
+  );
 }
 
 // Get a clear version

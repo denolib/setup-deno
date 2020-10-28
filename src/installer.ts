@@ -35,7 +35,7 @@ import * as core from "@actions/core";
 import * as tc from "@actions/tool-cache";
 import * as exec from "@actions/exec";
 import * as io from "@actions/io";
-import * as uuidV4 from "uuid";
+import { v4 as uuidV4 } from "uuid";
 import { HttpClient } from "@actions/http-client";
 
 function getDenoArch(version: Version): Arch {

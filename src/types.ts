@@ -17,3 +17,12 @@ export type ArchOld = "x64";
 export type Arch = "x86_64" | ArchOld;
 
 export type Version = LiteralUnion<"nightly", string>;
+
+/**
+ * https://raw.githubusercontent.com/denoland/deno_website2/master/versions.json
+ */
+export interface DenoVersions {
+  std: string[];
+  cli: string[];
+  cli_to_std: Record<string, string>;
+}

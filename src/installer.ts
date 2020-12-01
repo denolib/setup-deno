@@ -1,4 +1,4 @@
-import type { Version, Arch, Platform } from "./types";
+import type { Version, Arch, Platform, DenoVersions } from "./types";
 
 import * as os from "os";
 import * as path from "path";
@@ -37,6 +37,8 @@ import * as exec from "@actions/exec";
 import * as io from "@actions/io";
 import { v4 as uuidV4 } from "uuid";
 import { HttpClient } from "@actions/http-client";
+
+import * as deprecatedVersions from "./version-before-0.34.0.json";
 
 function getDenoArch(version: Version): Arch {
   return version === "nightly"
@@ -131,19 +133,18 @@ async function queryLatestMatch(versionSpec: Version): Promise<string> {
 }
 
 export async function getAvailableVersions(): Promise<string[]> {
-  // a temporary workaround until a Release API is provided. (#11)
   const httpc = new HttpClient("setup-deno");
-  const body = await (
-    await httpc.get(
-      "https://raw.githubusercontent.com/denoland/deno/master/Releases.md"
+  const body = (
+    await httpc.getJson<DenoVersions>(
+      "https://raw.githubusercontent.com/denoland/deno_website2/master/versions.json"
     )
-  ).readBody();
-  const matches = body.matchAll(/### (v?\d+\.\d+\.\d+)/g);
+  ).result;
 
-  return [...matches]
-    .map((m) => m[1])
-    .filter((v) => v && v !== "v0.0.0")
-    .map((version) => (version.startsWith("v") ? version : "v" + version));
+  if (body === null) {
+    throw new Error("Unable to fetch Deno versions");
+  }
+
+  return [...Object.keys(body.cli_to_std), ...deprecatedVersions];
 }
 
 export function getDownloadUrl(version: Version): string {

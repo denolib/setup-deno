@@ -38,7 +38,7 @@ import * as io from "@actions/io";
 import { v4 as uuidV4 } from "uuid";
 import { HttpClient } from "@actions/http-client";
 
-import * as deprecatedVersions from "./version-before-0.34.0.json";
+import * as deprecatedVersions from "./versions-before-0.34.0.json";
 
 function getDenoArch(version: Version): Arch {
   return version === "nightly"
